@@ -1,0 +1,11 @@
+# Build artifacts
+*.tmp
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
