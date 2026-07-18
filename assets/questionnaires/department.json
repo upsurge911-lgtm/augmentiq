@@ -1,5 +1,168 @@
 {
   "tier": "department",
-  "status": "placeholder",
-  "questions": []
+  "description": "Department within an organisation (15-100 people), one memory backend, role-based access. 17 questions, ~8 min to complete.",
+  "questions": [
+    {
+      "id": "Q1",
+      "tier": 1,
+      "prompt": "What should I call this AugmentIQ setup? (e.g., 'acme-marketing-dept', 'finance-2026')",
+      "smart_default": "department",
+      "why_we_ask": "Used for the timeline prefix, config filename, and the department tag on every record.",
+      "type": "string",
+      "validation": "1-100 chars, lowercase, no spaces (use hyphens)"
+    },
+    {
+      "id": "Q2",
+      "tier": 1,
+      "prompt": "Which department? (e.g., marketing, finance, engineering, sales, HR, legal)",
+      "smart_default": "",
+      "why_we_ask": "Used to scope records by department. Records tagged with this department are visible to members of this department (if RBAC is enabled).",
+      "type": "enum",
+      "validation": "one of: marketing, finance, engineering, sales, hr, legal, operations, product, customer_success, other"
+    },
+    {
+      "id": "Q3",
+      "tier": 1,
+      "prompt": "How many people are in this department?",
+      "smart_default": "30",
+      "why_we_ask": "Used to size the cron retention window and the audit log.",
+      "type": "int",
+      "validation": "1-500"
+    },
+    {
+      "id": "Q4",
+      "tier": 3,
+      "prompt": "Which memory backend are you using?",
+      "smart_default": "custom",
+      "why_we_ask": "For departments, Custom (AugmentIQ+ MCP server) is the recommended choice for serious use — local-first, no vendor lock-in, tamper-evident audit. mem0 is the cloud alternative.",
+      "type": "enum",
+      "validation": "one of: mem0, custom, obsidian, reme, hermes_native",
+      "options": [
+        {"value": "custom", "label": "Custom (AugmentIQ+ MCP) — recommended for departments"},
+        {"value": "mem0", "label": "mem0 — cloud alternative"},
+        {"value": "obsidian", "label": "Obsidian — small co-located teams only"},
+        {"value": "reme", "label": "ReMe — versioned, audit-friendly"},
+        {"value": "hermes_native", "label": "Hermes native — only if everyone is on Hermes"}
+      ]
+    },
+    {
+      "id": "Q5",
+      "tier": 3,
+      "prompt": "Where is the memory backend located?",
+      "smart_default": "auto-detect",
+      "why_we_ask": "The Skill needs the path or URL.",
+      "type": "string",
+      "validation": "filesystem path or URL; leave blank for auto-detect"
+    },
+    {
+      "id": "Q6",
+      "tier": 4,
+      "prompt": "What regulations apply?",
+      "smart_default": "[\"gdpr\", \"soc2\"]",
+      "why_we_ask": "Drives the retention defaults and the DSR workflow. For most departments, GDPR (if EU data) + SOC2 (if audit-bound) is the default.",
+      "type": "list",
+      "validation": "each entry one of: gdpr, soc2, hipaa, iso27001, pci_dss"
+    },
+    {
+      "id": "Q7",
+      "tier": 4,
+      "prompt": "Default classification for this department's records?",
+      "smart_default": "confidential",
+      "why_we_ask": "Records from this department default to this classification. PII auto-upgrades to 'restricted' automatically. Lower classifications ('public', 'internal') are opt-in per record.",
+      "type": "enum",
+      "validation": "one of: public, internal, confidential, restricted"
+    },
+    {
+      "id": "Q8",
+      "tier": 4,
+      "prompt": "Who is the DPO for DSR notifications?",
+      "smart_default": "",
+      "why_we_ask": "When a DSR is fulfilled, the DPO is notified. Leave blank to skip.",
+      "type": "string",
+      "validation": "email format or empty"
+    },
+    {
+      "id": "Q9",
+      "tier": 4,
+      "prompt": "Retention period per classification (days)?",
+      "smart_default": "{\"public\": 2555, \"internal\": 2555, \"confidential\": 2555, \"restricted\": 1095}",
+      "why_we_ask": "Defaults: 7 years for public/internal/confidential, 3 years for restricted. Override per your retention policy. Note: GDPR requires 'no longer than necessary' — set shorter for personal data.",
+      "type": "map",
+      "validation": "each value: 1 to 36500 days"
+    },
+    {
+      "id": "Q10",
+      "tier": 5,
+      "prompt": "When should AugmentIQ capture context?",
+      "smart_default": "full_cron_set",
+      "why_we_ask": "For departments, full cron set (daily, weekly, monthly, quarterly, on-event) is typical. Manual-only is too sparse for department-level memory.",
+      "type": "enum",
+      "validation": "one of: daily_snapshot, daily_plus_on_event, full_cron_set"
+    },
+    {
+      "id": "Q11",
+      "tier": 5,
+      "prompt": "Which on-event triggers should fire?",
+      "smart_default": "[\"commit\", \"decision\", \"customer_interaction\", \"incident\", \"policy_change\", \"hire\", \"contract\"]",
+      "why_we_ask": "All 7 triggers are recommended for departments. The agent auto-detects which events are available from the host agent's event sources.",
+      "type": "list",
+      "validation": "each entry one of: commit, decision, customer_interaction, incident, policy_change, hire, contract"
+    },
+    {
+      "id": "Q12",
+      "tier": 6,
+      "prompt": "Do you have historical data to bring in?",
+      "smart_default": "yes",
+      "why_we_ask": "Departments typically have years of data. Yes is the default; you can skip with no if you're starting fresh.",
+      "type": "bool",
+      "validation": "true or false"
+    },
+    {
+      "id": "Q13",
+      "tier": 6,
+      "prompt": "If yes, list the sources. (Agent will route enterprise platforms to customdev@upsurge.ae for paid migration.)",
+      "smart_default": "",
+      "why_we_ask": "Per source, the agent will detect, classify by category, and route accordingly.",
+      "type": "list",
+      "validation": "each entry: source_id, source_type, source_category, location, classification_default",
+      "depends_on": "Q12 == true"
+    },
+    {
+      "id": "Q14",
+      "tier": 6,
+      "prompt": "Default batch size for nightly ingest batches?",
+      "smart_default": "medium_1000",
+      "why_we_ask": "Per source, the agent computes a recommended batch size from volume. This is the default if the volume doesn't force a different choice.",
+      "type": "enum",
+      "validation": "one of: small_100, medium_1000, large_10000, xl_100000",
+      "depends_on": "Q12 == true"
+    },
+    {
+      "id": "Q15",
+      "tier": 7,
+      "prompt": "Enable role-based access control?",
+      "smart_default": "yes",
+      "why_we_ask": "For departments, RBAC is recommended. Members of the department can read all department records; the department head can write; the legal team can redact.",
+      "type": "bool",
+      "validation": "true or false"
+    },
+    {
+      "id": "Q16",
+      "tier": 7,
+      "prompt": "Multi-agent federation? (Allow subagents to spawn for batch processing)",
+      "smart_default": "no",
+      "why_we_ask": "For departments, subagents are useful for large legacy ingests (batches of 10k+ records). For most department use, single-agent is sufficient.",
+      "type": "bool",
+      "validation": "true or false"
+    },
+    {
+      "id": "Q17",
+      "tier": 7,
+      "prompt": "Failure handling on backend unreachable?",
+      "smart_default": "pause_and_alert",
+      "why_we_ask": "What should AugmentIQ do if the memory backend goes down? pause_and_alert: stop writes, alert the user, resume when back. continue_silently: log and continue (records lost). abort: terminate all operations. Default is the safest.",
+      "type": "enum",
+      "validation": "one of: pause_and_alert, continue_silently, abort"
+    }
+  ]
 }

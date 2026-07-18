@@ -1,5 +1,63 @@
 {
   "tier": "individual",
-  "status": "placeholder",
-  "questions": []
+  "description": "Single user, single host, single memory backend. 5 questions, ~2 min to complete.",
+  "questions": [
+    {
+      "id": "Q1",
+      "tier": 1,
+      "prompt": "What should I call this AugmentIQ setup? (e.g., 'personal', 'aaron-personal', 'amit-research')",
+      "smart_default": "personal",
+      "why_we_ask": "Used for the timeline prefix and the config filename. Anything readable works.",
+      "type": "string",
+      "validation": "1-100 chars, lowercase, no spaces (use hyphens)"
+    },
+    {
+      "id": "Q2",
+      "tier": 3,
+      "prompt": "Which memory backend are you using?",
+      "smart_default": "obsidian",
+      "why_we_ask": "Determines where records are stored. For individual use, Obsidian (local Markdown) is the simplest. Pick 'custom' only if you have an AugmentIQ+ MCP server running.",
+      "type": "enum",
+      "validation": "one of: obsidian, mem0, reme, hermes_native, custom",
+      "options": [
+        {"value": "obsidian", "label": "Obsidian (local Markdown vault) — recommended for individuals"},
+        {"value": "mem0", "label": "mem0 (cloud memory layer) — recommended if you already use mem0"},
+        {"value": "reme", "label": "ReMe (file-based, versioned) — recommended if you need audit history"},
+        {"value": "hermes_native", "label": "Hermes native MEMORY.md + USER.md — recommended for Hermes users"},
+        {"value": "custom", "label": "Custom (AugmentIQ+ MCP server) — recommended for serious / enterprise / local-first use"}
+      ]
+    },
+    {
+      "id": "Q3",
+      "tier": 3,
+      "prompt": "Where is the memory backend located?",
+      "smart_default": "auto-detect",
+      "why_we_ask": "The Skill needs to know the path or URL of your backend. For Obsidian, this is your vault directory. For mem0, this is the API URL. For Custom, this is the MCP server endpoint.",
+      "type": "string",
+      "validation": "filesystem path or URL; leave blank for auto-detect"
+    },
+    {
+      "id": "Q4",
+      "tier": 4,
+      "prompt": "Do you want classification applied automatically?",
+      "smart_default": "yes",
+      "why_we_ask": "If yes, AugmentIQ tags each record with public / internal / confidential / restricted based on its content (using PII detection). If no, you classify manually. Recommended: yes for individuals who don't want to think about it.",
+      "type": "bool",
+      "validation": "true or false"
+    },
+    {
+      "id": "Q5",
+      "tier": 5,
+      "prompt": "When should AugmentIQ capture context?",
+      "smart_default": "manual_only",
+      "why_we_ask": "On-event capture (commit, decision, etc.) requires event sources to be wired. For individuals, manual capture (`/augmentiq save`) is the simplest starting point. You can add crons later via `/augmentiq reconfigure`.",
+      "type": "enum",
+      "validation": "one of: manual_only, daily_snapshot, daily_plus_on_event",
+      "options": [
+        {"value": "manual_only", "label": "Manual only — you call /augmentiq save when you want to capture"},
+        {"value": "daily_snapshot", "label": "Daily snapshot — automatic daily capture at 02:00"},
+        {"value": "daily_plus_on_event", "label": "Daily + on-event — daily plus automatic capture on commits / decisions / etc."}
+      ]
+    }
+  ]
 }

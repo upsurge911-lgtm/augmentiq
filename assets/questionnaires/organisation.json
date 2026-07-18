@@ -1,5 +1,208 @@
 {
   "tier": "organisation",
-  "status": "placeholder",
-  "questions": []
+  "description": "Whole organisation (100+ people, multiple departments), shared memory, full governance. 22 questions, ~15 min to complete.",
+  "questions": [
+    {
+      "id": "Q1",
+      "tier": 1,
+      "prompt": "What should I call this AugmentIQ setup? (e.g., 'acme-corp', 'globex-2026')",
+      "smart_default": "organisation",
+      "why_we_ask": "Used for the timeline prefix, config filename, and the organisation tag on every record.",
+      "type": "string",
+      "validation": "1-100 chars, lowercase, no spaces (use hyphens)"
+    },
+    {
+      "id": "Q2",
+      "tier": 1,
+      "prompt": "Organisation name (display)?",
+      "smart_default": "",
+      "why_we_ask": "Used in audit reports and DSR responses. May include spaces, capitalisation.",
+      "type": "string",
+      "validation": "1-200 chars"
+    },
+    {
+      "id": "Q3",
+      "tier": 1,
+      "prompt": "Industry vertical? (helps the agent recommend compliance defaults)",
+      "smart_default": "",
+      "why_we_ask": "Drives the compliance-pack recommendations. Healthcare → HIPAA. Finance → SOC2 + PCI-DSS. Government → ISO 27001 + custom. SaaS → SOC2. Manufacturing → ISO 27001.",
+      "type": "enum",
+      "validation": "one of: healthcare, finance, government, defense, saas, manufacturing, retail, logistics, education, other"
+    },
+    {
+      "id": "Q4",
+      "tier": 1,
+      "prompt": "How many employees total?",
+      "smart_default": "500",
+      "why_we_ask": "Used to size crons, retention windows, and the audit log. Org-scale deployments are sized differently from department-scale.",
+      "type": "int",
+      "validation": "1-1000000"
+    },
+    {
+      "id": "Q5",
+      "tier": 2,
+      "prompt": "Which host agent is the primary?",
+      "smart_default": "hermes",
+      "why_we_ask": "Determines the cron registration format and the slash command dispatch.",
+      "type": "enum",
+      "validation": "one of: hermes, openclaw, claude_code, codex, cursor"
+    },
+    {
+      "id": "Q6",
+      "tier": 3,
+      "prompt": "Which memory backend are you using?",
+      "smart_default": "custom",
+      "why_we_ask": "For organisations, Custom (AugmentIQ+ MCP server) is the recommended choice — local-first, no vendor lock-in, tamper-evident audit. The AugmentIQ+ platform is the enterprise product.",
+      "type": "enum",
+      "validation": "one of: custom, mem0",
+      "options": [
+        {"value": "custom", "label": "Custom (AugmentIQ+ MCP) — recommended for organisations"},
+        {"value": "mem0", "label": "mem0 — cloud alternative, requires trust in mem0's compliance posture"}
+      ]
+    },
+    {
+      "id": "Q7",
+      "tier": 3,
+      "prompt": "Where is the AugmentIQ+ MCP server located?",
+      "smart_default": "docker:augmentiq-engine",
+      "why_we_ask": "The Skill launches the MCP server as a subprocess. Per Antigravity, the launch command is `docker run -i augmentiq-engine`. Override only if you've deployed the server elsewhere.",
+      "type": "string",
+      "validation": "URL, Docker reference, or 'docker:augmentiq-engine'"
+    },
+    {
+      "id": "Q8",
+      "tier": 4,
+      "prompt": "What regulations apply?",
+      "smart_default": "[\"gdpr\", \"soc2\", \"iso27001\"]",
+      "why_we_ask": "Drives the retention defaults, DSR workflow, and audit report content. For organisations, all 4 (GDPR, SOC2, HIPAA, ISO 27001) are commonly required. Override per your legal counsel's advice.",
+      "type": "list",
+      "validation": "each entry one of: gdpr, soc2, hipaa, iso27001, pci_dss"
+    },
+    {
+      "id": "Q9",
+      "tier": 4,
+      "prompt": "Default classification for org records?",
+      "smart_default": "confidential",
+      "why_we_ask": "Most org records are confidential by default. PII auto-upgrades to restricted. Per-record overrides are always possible.",
+      "type": "enum",
+      "validation": "one of: public, internal, confidential, restricted"
+    },
+    {
+      "id": "Q10",
+      "tier": 4,
+      "prompt": "DPO contact for DSR notifications?",
+      "smart_default": "",
+      "why_we_ask": "When a DSR is fulfilled, the DPO is notified. Required for organisations with formal DPO roles (per GDPR Art. 37).",
+      "type": "string",
+      "validation": "email format or empty"
+    },
+    {
+      "id": "Q11",
+      "tier": 4,
+      "prompt": "Retention period per classification (days)?",
+      "smart_default": "{\"public\": 2555, \"internal\": 2555, \"confidential\": 2555, \"restricted\": 1095}",
+      "why_we_ask": "Defaults: 7 years for public/internal/confidential, 3 years for restricted. GDPR requires 'no longer than necessary' — set shorter for personal data. SOC2 / ISO 27001 may require 7 years for financial / quality records.",
+      "type": "map",
+      "validation": "each value: 1 to 36500 days"
+    },
+    {
+      "id": "Q12",
+      "tier": 4,
+      "prompt": "DSR response deadline (days)?",
+      "smart_default": "30",
+      "why_we_ask": "GDPR Art. 12 mandates 30 days. Some jurisdictions are tighter (e.g., California CCPA: 45 days). The Skill enforces this deadline; exceeding it is a violation.",
+      "type": "int",
+      "validation": "1-90"
+    },
+    {
+      "id": "Q13",
+      "tier": 5,
+      "prompt": "When should AugmentIQ capture context?",
+      "smart_default": "full_cron_set",
+      "why_we_ask": "For organisations, full cron set is required (daily, weekly, monthly, quarterly, on-event).",
+      "type": "enum",
+      "validation": "one of: daily_plus_on_event, full_cron_set"
+    },
+    {
+      "id": "Q14",
+      "tier": 5,
+      "prompt": "Which on-event triggers?",
+      "smart_default": "[\"commit\", \"decision\", \"customer_interaction\", \"incident\", \"policy_change\", \"hire\", \"contract\"]",
+      "why_we_ask": "All 7 triggers for organisations.",
+      "type": "list",
+      "validation": "each entry one of: commit, decision, customer_interaction, incident, policy_change, hire, contract"
+    },
+    {
+      "id": "Q15",
+      "tier": 5,
+      "prompt": "Which per-source legacy ingest?",
+      "smart_default": "[]",
+      "why_we_ask": "For orgs, legacy ingest is typically part of the engagement. The agent will list the sources and route enterprise platforms (SAP, Salesforce, Oracle, Workday) to customdev@upsurge.ae for paid migration.",
+      "type": "list",
+      "validation": "each entry: source_id, source_type, source_category, location, classification_default, transfer_strategy"
+    },
+    {
+      "id": "Q16",
+      "tier": 6,
+      "prompt": "Default batch size for nightly ingest batches?",
+      "smart_default": "large_10000",
+      "why_we_ask": "For orgs, large batch is typical. Override per source if you have smaller sources.",
+      "type": "enum",
+      "validation": "one of: small_100, medium_1000, large_10000, xl_100000"
+    },
+    {
+      "id": "Q17",
+      "tier": 6,
+      "prompt": "Custom migration engagement email (for enterprise platforms)?",
+      "smart_default": "customdev@upsurge.ae",
+      "why_we_ask": "When a source is enterprise_platform (SAP, Salesforce, Oracle, Workday), the agent generates a draft email to this address with the source details.",
+      "type": "string",
+      "validation": "email format"
+    },
+    {
+      "id": "Q18",
+      "tier": 7,
+      "prompt": "Enable role-based access control?",
+      "smart_default": "yes",
+      "why_we_ask": "For organisations, RBAC is required. Default roles: owner (full access), admin (all but destroy), manager (department scope), member (read + write own records), auditor (read only).",
+      "type": "bool",
+      "validation": "true or false"
+    },
+    {
+      "id": "Q19",
+      "tier": 7,
+      "prompt": "Multi-agent federation? (Allow subagents for batch processing, large migrations, audit generation)",
+      "smart_default": "yes",
+      "why_we_ask": "For orgs, multi-agent federation is recommended. Subagents are useful for: large legacy ingests (>10k items), quarterly audit generation, DSR fulfillment at scale.",
+      "type": "bool",
+      "validation": "true or false"
+    },
+    {
+      "id": "Q20",
+      "tier": 7,
+      "prompt": "Failure handling on backend unreachable?",
+      "smart_default": "pause_and_alert",
+      "why_we_ask": "pause_and_alert: stop writes, alert ops, resume when back. Recommended for orgs — silent data loss is unacceptable.",
+      "type": "enum",
+      "validation": "one of: pause_and_alert, abort"
+    },
+    {
+      "id": "Q21",
+      "tier": 7,
+      "prompt": "Failover memory backend? (where to write if primary is down for >1 hour)",
+      "smart_default": "",
+      "why_we_ask": "Optional. If set, AugmentIQ switches to this backend when the primary is unreachable for >1 hour. The failover backend is typically a degraded mode (read-only) until primary returns.",
+      "type": "string",
+      "validation": "one of: mem0, hermes_native, or empty (no failover)"
+    },
+    {
+      "id": "Q22",
+      "tier": 7,
+      "prompt": "Telemetry to AugmentIQ core team? (anonymous usage stats, error reports)",
+      "smart_default": "no",
+      "why_we_ask": "Default is no for organisations (data sovereignty). If yes, we collect: command counts, error rates, performance metrics. Never record content. Opt-in only.",
+      "type": "bool",
+      "validation": "true or false"
+    }
+  ]
 }

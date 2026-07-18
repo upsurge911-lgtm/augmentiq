@@ -1,5 +1,112 @@
 {
   "tier": "team",
-  "status": "placeholder",
-  "questions": []
+  "description": "Small team (3-15 people), shared memory, one host. 11 questions, ~5 min to complete.",
+  "questions": [
+    {
+      "id": "Q1",
+      "tier": 1,
+      "prompt": "What should I call this AugmentIQ setup? (e.g., 'acme-product-team', 'sales-2026')",
+      "smart_default": "team",
+      "why_we_ask": "Used for the timeline prefix, the config filename, and the team tag on every record.",
+      "type": "string",
+      "validation": "1-100 chars, lowercase, no spaces (use hyphens)"
+    },
+    {
+      "id": "Q2",
+      "tier": 1,
+      "prompt": "How many people are on this team?",
+      "smart_default": "5",
+      "why_we_ask": "Used to size the cron retention window and to flag over-quota situations. Per-team, not per-individual.",
+      "type": "int",
+      "validation": "1-50"
+    },
+    {
+      "id": "Q3",
+      "tier": 3,
+      "prompt": "Which memory backend are you using?",
+      "smart_default": "mem0",
+      "why_we_ask": "For teams, mem0 (cloud, multi-user) is the typical choice. Obsidian works for small co-located teams. Custom (AugmentIQ+) is the enterprise / local-first choice.",
+      "type": "enum",
+      "validation": "one of: obsidian, mem0, reme, hermes_native, custom",
+      "options": [
+        {"value": "obsidian", "label": "Obsidian — co-located team, single vault"},
+        {"value": "mem0", "label": "mem0 — recommended for distributed teams"},
+        {"value": "reme", "label": "ReMe — versioned, audit-friendly"},
+        {"value": "custom", "label": "Custom (AugmentIQ+ MCP) — local-first, enterprise"}
+      ]
+    },
+    {
+      "id": "Q4",
+      "tier": 3,
+      "prompt": "Where is the memory backend located?",
+      "smart_default": "auto-detect",
+      "why_we_ask": "The Skill needs the path or URL.",
+      "type": "string",
+      "validation": "filesystem path or URL; leave blank for auto-detect"
+    },
+    {
+      "id": "Q5",
+      "tier": 4,
+      "prompt": "What regulations apply?",
+      "smart_default": "[\"gdpr\"]",
+      "why_we_ask": "Drives the retention defaults and the DSR workflow. For teams handling EU data, GDPR is typically required. SOC2 applies if you have SOC2 audit obligations. HIPAA if you handle PHI. PCI-DSS if you handle card data.",
+      "type": "list",
+      "validation": "each entry one of: gdpr, soc2, hipaa, iso27001, pci_dss"
+    },
+    {
+      "id": "Q6",
+      "tier": 4,
+      "prompt": "Who is the DPO (Data Protection Officer) for DSR notifications?",
+      "smart_default": "",
+      "why_we_ask": "When a DSR is fulfilled, the DPO is notified. Leave blank if you don't have one (AugmentIQ skips the notification).",
+      "type": "string",
+      "validation": "email format or empty"
+    },
+    {
+      "id": "Q7",
+      "tier": 5,
+      "prompt": "When should AugmentIQ capture context?",
+      "smart_default": "daily_plus_on_event",
+      "why_we_ask": "For teams, daily + on-event is the typical default. Manual-only is too sparse for team-level memory.",
+      "type": "enum",
+      "validation": "one of: manual_only, daily_snapshot, daily_plus_on_event, full_cron_set"
+    },
+    {
+      "id": "Q8",
+      "tier": 5,
+      "prompt": "Which on-event triggers should fire?",
+      "smart_default": "[\"decision\", \"customer_interaction\"]",
+      "why_we_ask": "The 7 on-event triggers are: commit, decision, customer_interaction, incident, policy_change, hire, contract. For a team, decisions and customer interactions are typically the highest-value events to capture.",
+      "type": "list",
+      "validation": "each entry one of: commit, decision, customer_interaction, incident, policy_change, hire, contract"
+    },
+    {
+      "id": "Q9",
+      "tier": 6,
+      "prompt": "Do you have historical data to bring in?",
+      "smart_default": "no",
+      "why_we_ask": "If yes, AugmentIQ will run the legacy ingest for each source. If no, you start with a clean memory. You can add sources later via /augmentiq ingest.",
+      "type": "bool",
+      "validation": "true or false"
+    },
+    {
+      "id": "Q10",
+      "tier": 6,
+      "prompt": "If yes, which sources? (you can list multiple; agent will route enterprise platforms to human engagement)",
+      "smart_default": "",
+      "why_we_ask": "Per source, the agent will detect, classify by category, and route accordingly. Sources: local files, cloud storage (Drive/Dropbox/OneDrive/SharePoint), standard SaaS (Notion/Slack/GitHub/Linear/HubSpot), email (Gmail/Outlook/IMAP), enterprise platforms (SAP/Salesforce/Oracle/Workday — these route to customdev@upsurge.ae).",
+      "type": "list",
+      "validation": "each entry: source_id, source_type, source_category, location, classification_default",
+      "depends_on": "Q9 == true"
+    },
+    {
+      "id": "Q11",
+      "tier": 7,
+      "prompt": "Enable role-based access control?",
+      "smart_default": "no",
+      "why_we_ask": "RBAC lets you restrict which actions each user can take. For a small team, default is off. Enable for compliance-conscious teams.",
+      "type": "bool",
+      "validation": "true or false"
+    }
+  ]
 }
