@@ -46,7 +46,7 @@ ls ~/.hermes/skills/augmentiq/references/
 
 # 4. MCP launch scripts
 ls ~/.hermes/skills/augmentiq/assets/mcp-launch/
-# Expect: hermes.sh, openclaw.sh, claude_code.sh, codex.sh, cursor.sh
+# Expect: hermes.sh, openclaw.sh, claude_desktop.sh, claude_code.sh, codex.sh, cursor.sh
 # Each is chmod +x and contains `docker run -i augmentiq-engine`
 
 # 5. Questionnaires are real

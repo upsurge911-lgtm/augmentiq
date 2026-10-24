@@ -1,0 +1,17 @@
+{
+  "_comment": "OpenClaw automations template — daily-snapshot cadence. The agent creates one automation per cadence via the Gateway automations config during /augmentiq init. This file documents the shape; values in <ANGLE_BRACKETS> are substituted.",
+  "name": "augmentiq-daily-snapshot",
+  "schedule": { "kind": "cron", "expr": "0 2 * * *", "tz": "<USER_TIMEZONE>" },
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Scheduled AugmentIQ cadence: daily-snapshot. Run /augmentiq snapshot per ~/.augmentiq/config.yaml. Apply per-batch confirmation if >100 items (Principle 4). Write one timeline entry per state change (Principle 5).",
+    "timeoutSeconds": 600
+  },
+  "enabled": true,
+  "_other_cadences": {
+    "weekly-review": { "expr": "0 4 * * 0" },
+    "monthly-retention": { "expr": "0 3 1 * *" },
+    "quarterly-audit": { "expr": "0 4 28-31 1,4,7,10 *", "_note": "agent computes exact quarter-end date" },
+    "ingest-batch": { "expr": "0 2 * * *", "_note": "only if any source uses nightly_batches" }
+  }
+}

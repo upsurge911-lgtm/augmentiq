@@ -48,7 +48,7 @@ The full per-principle spec is in [`references/PRINCIPLES.md`](./references/PRIN
 
 ### Prerequisites
 
-- An Agent-Skills-compliant host agent: **Hermes** (primary), **OpenClaw** (secondary), Claude Code, Codex, Cursor, or any of 30+ spec-compliant hosts.
+- An Agent-Skills-compliant host agent: **Hermes** (primary), **OpenClaw** (secondary), **Claude Desktop**, Claude Code, Codex, Cursor, or any of 30+ spec-compliant hosts.
 - A memory backend (5 supported, see above).
 - For AugmentIQ+ (recommended for serious use): **Docker** must be available on the host.
 
@@ -74,6 +74,13 @@ docker build -t augmentiq-engine /path/to/augmentiq-plus
 # 6. See the audit trail
 /augmentiq timeline
 ```
+
+### Claude Desktop
+
+1. Upload the skill: Settings → Customize → Skills → **+** → upload a ZIP of this repo (`SKILL.md` at the ZIP root).
+2. Optional — AugmentIQ+ backend: point `claude_desktop_config.json` at the launch script:
+   `{"mcpServers": {"augmentiq": {"command": "/path/to/AugmentIQ/assets/mcp-launch/claude_desktop.sh"}}}`
+3. Ask Claude: "run augmentiq help"
 
 Full install walkthrough is in [`INSTALL_TEST.md`](./INSTALL_TEST.md).
 
@@ -161,7 +168,7 @@ AugmentIQ is the portable governance skill. The umbrella brand is **Agentic Augm
 - [`references/PRINCIPLES.md`](./references/PRINCIPLES.md) — the 5 Immutable Principles (full spec)
 - [`references/commands.md`](./references/commands.md) — all 26 commands
 - [`SKILL.md`](./SKILL.md) — the Skill body the host agent loads
-- [Agent Skills spec](https://agentskills.com) — the open standard this Skill implements
+- [Agent Skills spec](https://agentskills.io) — the open standard this Skill implements
 
 ---
 

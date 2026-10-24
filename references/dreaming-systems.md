@@ -5,8 +5,8 @@
 > (the prior 511-line version) for anyone who needs the upstream quotes.
 >
 > **Location in skill package:** `references/dreaming-systems.md` (this
-> file). Per-host references are `references/agents/hermes.md` and
-> `references/agents/openclaw.md`.
+> file). Per-host references are `references/agents/agent-hermes.md` and
+> `references/agents/agent-openclaw.md`.
 
 ## The directive
 

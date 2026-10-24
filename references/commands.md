@@ -1144,11 +1144,11 @@ Source SHA256: a1b2c3d4e5f6...
    - If `ingest_status` is not `declared`/`assessing`/`paused`/`failed`: skip
      (already in progress or done).
    - If `source_category` is `enterprise_platform`: route to `customdev@upsurge.ae`
-     (see `references/ingest/routing.md`), add to status as `pending_migration`,
+     (see `references/routing.md`), add to status as `pending_migration`,
      do not auto-ingest.
    - Otherwise: load the per-category directive
-     (`references/ingest/sources/<category>.md`), execute the ingest per
-     `references/ingest/batch_protocol.md`.
+     (`references/ingest/<category>.md`), execute the ingest per
+     `references/batch_protocol.md`.
 4. Per Principle 4: confirm the action and its scope before starting.
 
 **Confirmation prompt:**

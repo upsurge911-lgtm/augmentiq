@@ -190,7 +190,7 @@ $25k-$80k depending on schema complexity. Add this to your
 
 These coefficients are **conservative defaults**. After real migrations, the
 user (or AugmentIQ) can update them in the per-category directive
-(`references/ingest/sources/<category>.md`) to match actual data.
+(`references/ingest/<category>.md`) to match actual data.
 
 The calibration process:
 

@@ -9,3 +9,6 @@
 # Python
 __pycache__/
 *.pyc
+
+# Internal docs — never commit or push (repo is public)
+docs/internal/

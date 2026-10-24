@@ -262,9 +262,9 @@ When the host agent's session ends (or the Skill is destroyed):
 
 The Skill does NOT need to explicitly clean up; the host agent's session cleanup will reap the subprocess.
 
-## 3. The 5 per-host launch scripts
+## 3. The 6 per-host launch scripts
 
-All 5 scripts are in `assets/mcp-launch/`. Each is `chmod +x` and contains the per-host environment setup. The actual MCP launch is the same across hosts: `docker run -i augmentiq-engine`.
+All 6 scripts are in `assets/mcp-launch/`. Each is `chmod +x` and contains the per-host environment setup. The actual MCP launch is the same across hosts: `docker run -i augmentiq-engine`.
 
 ### 3.1 `hermes.sh` (primary)
 
@@ -313,6 +313,10 @@ Same as Claude Code — manual launch required. The script is the same.
 ### 3.5 `cursor.sh` (Tier 3)
 
 Same as Claude Code — manual launch required. The script is the same.
+
+### 3.6 `claude_desktop.sh` (Tier 2)
+
+Claude Desktop auto-launches MCP servers via `claude_desktop_config.json`. The config's `mcpServers` entry points at this script, so the container lifecycle is managed by the Desktop app. The script is functionally the same as `claude_code.sh`; the invocation path differs (config-driven, not manual).
 
 ## 4. Error handling
 

@@ -158,7 +158,7 @@ one source uses `nightly_batches`.**
 - Source `ingest_status` in `paused|cancelled|completed|failed` → cron disabled
 
 **Inputs:** the legacy source config, the per-category ingest directive
-(`references/ingest/sources/<category>.md`).
+(`references/ingest/<category>.md`).
 
 **Outputs:**
 - A batch of records written to the memory backend
@@ -176,7 +176,7 @@ prompt.
 - Auth failure (e.g., Salesforce credentials expired): source is marked
   `auth_failed`, cron disabled for that source, user alerted immediately.
 - Rate limit: the agent handles natively (the directive in
-  `references/ingest/sources/<category>.md` specifies the rate-limit handling).
+  `references/ingest/<category>.md` specifies the rate-limit handling).
   AugmentIQ logs the backoff duration but does not retry within the same batch.
 - Transformation failure: items are marked failed, batch continues, summary
   reports the failure list. User can `/augmentiq ingest retry <batch_id>`.

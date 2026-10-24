@@ -1,0 +1,16 @@
+# systemd template — daily-snapshot cadence (Linux, any CLI host).
+# Install to: ~/.config/systemd/user/augmentiq-daily.service (+ .timer)
+# The agent substitutes <VALUES> during /augmentiq init.
+
+[Unit]
+Description=AugmentIQ daily-snapshot cadence
+Documentation=https://github.com/upsurge911-lgtm/AugmentIQ
+
+[Service]
+Type=oneshot
+# The host CLI wrapper. Examples:
+#   Claude Code:  claude -p "/augmentiq snapshot"
+#   Codex CLI:    codex exec "/augmentiq snapshot"
+ExecStart=<HOST_CLI> -p "/augmentiq snapshot"
+StandardOutput=append:%h/.augmentiq/cron/daily-snapshot.log
+StandardError=append:%h/.augmentiq/cron/daily-snapshot.err

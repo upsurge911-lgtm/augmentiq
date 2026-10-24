@@ -1,0 +1,12 @@
+# systemd timer — companion to augmentiq-daily.service.
+# Install to: ~/.config/systemd/user/augmentiq-daily.timer
+
+[Unit]
+Description=Run AugmentIQ daily-snapshot at 02:00
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -92,7 +92,7 @@ cadence (daily-snapshot, weekly-review, on-event).
 **Goal:** Persist a new context record with correct classification, tags, and audit reference, with user confirmation before any write.
 
 **Constraints:**
-1. Every record gets PII auto-classification per `references/ingest/pii-patterns.md` before write.
+1. Every record gets PII auto-classification per `references/pii-patterns.md` before write.
 2. Apply the source's default classification; PII upgrades are mandatory, not advisory.
 3. Show the preview (count, classification breakdown, sample of 3 records) before any bulk write >100 items.
 4. Per-record writes require per-action confirmation per Principle 4.
@@ -289,11 +289,11 @@ highest-risk action AugmentIQ takes.
 **Goal:** Bring historical data into the memory backend, with per-source strategy and per-batch audit, while routing enterprise platforms to the human engagement.
 
 **Constraints:**
-1. Per-source strategy is derived from `volume_gb` + `item_count` per `references/ingest/strategies.md`: one_shot ≤ 1GB / 10k items; nightly_batches ≤ 500GB / 1M items; paused otherwise.
+1. Per-source strategy is derived from `volume_gb` + `item_count` per `references/strategies.md`: one_shot ≤ 1GB / 10k items; nightly_batches ≤ 500GB / 1M items; paused otherwise.
 2. If `source_category = enterprise_platform`, route to `customdev@upsurge.ae` — do not auto-ingest. Generate the email draft, require user confirmation before sending.
 3. Per-source confirmation at ingest start. Per-batch confirmation if `items_attempted > 100`. Below 100, queue for next active session.
 4. PII auto-classification runs on every record before write.
-5. Every batch produces one timeline entry per `references/ingest/batch_protocol.md` with the 11 required fields.
+5. Every batch produces one timeline entry per `references/batch_protocol.md` with the 11 required fields.
 
 
 **Confirmation points:**

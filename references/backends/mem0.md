@@ -260,7 +260,7 @@ governance is free.
   AugmentIQ doesn't use it.)
 - It does not handle the legacy ingest for mem0 as a source. mem0 as a
   *backend* and mem0 as a *source* are different things. (mem0 is not
-  listed as a legacy source in `references/ingest/sources/`. If the user
+  listed as a legacy source in `references/ingest/`. If the user
   wants to ingest from mem0, they use `standard_saas` with the mem0
   API.)
 

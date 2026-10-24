@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- launchd template — daily-snapshot cadence (macOS, any CLI host).
+     Install to: ~/Library/LaunchAgents/com.augmentiq.daily-snapshot.plist
+     The agent substitutes the {{PLACEHOLDER}} values during /augmentiq init
+     (braces, not angle brackets — this is XML). -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.augmentiq.daily-snapshot</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- The host CLI wrapper. Examples:
+             Claude Code:  claude -p "/augmentiq snapshot"
+             Codex CLI:    codex exec "/augmentiq snapshot" -->
+        <string>{{HOST_CLI}}</string>
+        <string>-p</string>
+        <string>/augmentiq snapshot</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key><integer>2</integer>
+        <key>Minute</key><integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>{{HOME}}/.augmentiq/cron/daily-snapshot.log</string>
+    <key>StandardErrorPath</key>
+    <string>{{HOME}}/.augmentiq/cron/daily-snapshot.err</string>
+</dict>
+</plist>

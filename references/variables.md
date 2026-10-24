@@ -349,7 +349,7 @@ once per source.
 | Default | computed from `volume_gb`, `item_count`, `batch_size`, hours_per_night |
 | Scope | per_source |
 | Validation | valid date in the future |
-| Set by | estimator (the formula lives in `references/ingest/estimator.md`) |
+| Set by | estimator (the formula lives in `references/estimator.md`) |
 | Used by | `/augmentiq ingest status`, `init` summary |
 
 ---

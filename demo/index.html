@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AugmentiQ+ Enterprise Flow</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- TOP NAVIGATION -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <div class="logo">AQ+</div>
+            <div class="nav-tools">
+                <button class="tool-btn active">⌘ Flow</button>
+                <button class="tool-btn">⌘ Schema</button>
+                <button class="tool-btn">⌘ Audit</button>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="primary-btn">Deploy Engine</button>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="workspace">
+        
+        <!-- CANVAS (NODE GRAPH) -->
+        <main class="canvas" id="canvas">
+            <svg class="connections" id="connections-svg">
+                <!-- Bezier curves injected via JS -->
+            </svg>
+            
+            <div class="node-container">
+                <!-- Host Agent Node -->
+                <div class="node source-node" id="node-host" data-info="host" style="top: 30%; left: 5%;">
+                    <div class="node-icon">🤖</div>
+                    <div class="node-text">
+                        <div class="node-title">Host Agent</div>
+                        <div class="node-sub">Claude / Hermes</div>
+                    </div>
+                </div>
+
+                <!-- MCP Protocol Node -->
+                <div class="node mcp-node" id="node-mcp" data-info="mcp" style="top: 30%; left: 25%;">
+                    <div class="node-icon">⇋</div>
+                    <div class="node-text">
+                        <div class="node-title">AugmentiQ Skill</div>
+                        <div class="node-sub">MCP Standard</div>
+                    </div>
+                </div>
+
+                <!-- Ingest Pipeline / LangGraph -->
+                <div class="node process-node" id="node-validate" data-info="validate" style="top: 15%; left: 45%;">
+                    <div class="node-icon">✓</div>
+                    <div class="node-text">
+                        <div class="node-title">Validation</div>
+                        <div class="node-sub">Schema check</div>
+                    </div>
+                </div>
+
+                <div class="node process-node active" id="node-chunk" data-info="chunk" style="top: 30%; left: 45%;">
+                    <div class="node-icon">✂</div>
+                    <div class="node-text">
+                        <div class="node-title">AST Chunking</div>
+                        <div class="node-sub">Tree-sitter</div>
+                    </div>
+                </div>
+
+                <div class="node process-node" id="node-temporal" data-info="temporal" style="top: 45%; left: 45%;">
+                    <div class="node-icon">⏱</div>
+                    <div class="node-text">
+                        <div class="node-title">Temporal Stamp</div>
+                        <div class="node-sub">Bi-temporal logic</div>
+                    </div>
+                </div>
+
+                <div class="node process-node" id="node-embed" data-info="embed" style="top: 30%; left: 65%;">
+                    <div class="node-icon">⊗</div>
+                    <div class="node-text">
+                        <div class="node-title">Embedding</div>
+                        <div class="node-sub">Nomic / Qwen3</div>
+                    </div>
+                </div>
+
+                <!-- Storage Nodes -->
+                <div class="node db-node" id="node-sqlite" data-info="sqlite" style="top: 15%; left: 85%;">
+                    <div class="node-icon">▤</div>
+                    <div class="node-text">
+                        <div class="node-title">SQLite Audit</div>
+                        <div class="node-sub">Tamper-evident</div>
+                    </div>
+                </div>
+
+                <div class="node db-node" id="node-lance" data-info="lance" style="top: 45%; left: 85%;">
+                    <div class="node-icon">⛁</div>
+                    <div class="node-text">
+                        <div class="node-title">LanceDB</div>
+                        <div class="node-sub">Vector Store</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT SIDEBAR (INPUTS/TRANSFORMS) -->
+        <aside class="sidebar-right">
+            <div class="sidebar-section">
+                <h3>Immutable Principles</h3>
+                <div class="list-item" onclick="selectDetail('p1')">
+                    <span class="icon">1️⃣</span> We don't own your memory
+                </div>
+                <div class="list-item" onclick="selectDetail('p2')">
+                    <span class="icon">2️⃣</span> We don't own your agent
+                </div>
+                <div class="list-item" onclick="selectDetail('p3')">
+                    <span class="icon">3️⃣</span> Your data is yours forever
+                </div>
+                <div class="list-item" onclick="selectDetail('p4')">
+                    <span class="icon">4️⃣</span> Confirm before destructive
+                </div>
+                <div class="list-item active" onclick="selectDetail('p5')">
+                    <span class="icon">5️⃣</span> Audit everything
+                </div>
+            </div>
+
+            <div class="sidebar-section mt-4">
+                <h3>Ingest Sources</h3>
+                <div class="list-item"><span class="icon">﹛</span> Local Git Repos</div>
+                <div class="list-item"><span class="icon">☁</span> SharePoint / Drive</div>
+                <div class="list-item"><span class="icon">⚡</span> Salesforce</div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- BOTTOM PANELS -->
+    <div class="bottom-panels">
+        <!-- CODE VIEW -->
+        <div class="panel code-panel">
+            <div class="panel-header">
+                <span>Payload Inspector</span>
+                <span class="tag">JSON</span>
+            </div>
+            <pre class="code-view" id="code-view">
+{
+  "method": "mcp_add_memory",
+  "params": {
+    "content": "def authenticate(user):...",
+    "source": "git_repo_auth",
+    "classification": "internal"
+  }
+}
+            </pre>
+        </div>
+
+        <!-- DEBUG LOG -->
+        <div class="panel debug-panel">
+            <div class="panel-header">
+                <span>Execution Trace</span>
+                <button class="clear-btn">Clear</button>
+            </div>
+            <div class="debug-view" id="debug-view">
+                <div class="log-entry info"><span class="time">[14:22:49:720]</span> Receiving MCP payload from Host Agent...</div>
+                <div class="log-entry info"><span class="time">[14:22:49:725]</span> Validating schema... OK.</div>
+                <div class="log-entry highlight"><span class="time">[14:22:49:730]</span> Executing AST Chunking (Tree-sitter)... Extracted 4 semantic blocks.</div>
+                <div class="log-entry info"><span class="time">[14:22:49:740]</span> Applying Valid_Time: '2026-07-16T10:00:00Z'</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

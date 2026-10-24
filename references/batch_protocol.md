@@ -116,7 +116,7 @@ just enough to debug, not enough to leak content if the audit log is shared.
 | `OTHER` | Unclassified error | Log, alert user |
 
 **Source-specific error codes** can be added by the per-category directive
-(`references/ingest/sources/<category>.md`).
+(`references/ingest/<category>.md`).
 
 ---
 
@@ -202,7 +202,7 @@ Before logging a batch as `success`, the agent must verify:
 ## The on-disk representation
 
 The timeline (where batch log entries live) is stored in the memory backend
-per `references/timeline-schema.md`. The legacy source state lives in
+per `references/record-schema.md`. The legacy source state lives in
 `~/.augmentiq/config.yaml` under `legacy.legacy_sources[]`.
 
 **A batch log entry is ~500 bytes. A typical 1-year migration produces

@@ -139,7 +139,7 @@ Config lives in `~/.augmentiq/config.yaml`. The 7 tiers (Identity, Host, Memory,
 
 Per-backend behavior in `references/backends/<name>.md`. The "when to use" section in each per-backend reference points users to Custom when the use case is serious/enterprise/local-first.
 
-**Host agents (6+):** `hermes` (primary, MEMORY.md + USER.md), `openclaw` (secondary, has dreaming per `dreaming-systems.md`), `claude_code` (external cron), `codex` (Tier 3), `cursor` (Tier 3), `nanobot` (Tier 3). Per-host behavior in `references/agents/<name>.md`. Common patterns (detection, install, cron, slash command) in `references/agents/_common.md`.
+**Host agents (7):** `hermes` (primary, MEMORY.md + USER.md), `openclaw` (secondary, has dreaming per `dreaming-systems.md`), `claude_desktop` (Tier 2 — conversational console, Custom backend recommended), `claude_code` (external cron), `codex` (Tier 3), `cursor` (Tier 3), `nanobot` (Tier 3). Per-host behavior in `references/agents/<name>.md`. Common patterns (detection, install, cron, slash command) in `references/agents/agent-_common.md`.
 
 **Negative case:** the body never duplicates per-backend or per-host quirks. The per-target reference handles the detail.
 
@@ -203,7 +203,7 @@ When the configured backend is `custom` (AugmentIQ+ via MCP), the Skill launches
    - **Deletes** (`destroy --wipe-data`, `dsr --type=erasure`): `mcp_delete_memory`.
    - **Audit verification** (`audit --verify-chain`): `mcp_get_audit_entry` per record.
 4. **Errors.** The server returns JSON-RPC 2.0 errors. The Skill surfaces a user-friendly message and logs the raw code to stderr. Error codes are in `references/record-schema.md` §4.
-5. **Launch scripts** are in `assets/mcp-launch/<host>.sh` (5 files: hermes, openclaw, claude_code, codex, cursor). The scripts are `chmod +x` and contain the per-host environment setup.
+5. **Launch scripts** are in `assets/mcp-launch/<host>.sh` (6 files: hermes, openclaw, claude_desktop, claude_code, codex, cursor). The scripts are `chmod +x` and contain the per-host environment setup.
 
 **Hard dependency:** Docker. If the user wants the Custom backend, Docker must be installed and the `augmentiq-engine` image must be built (`docker build -t augmentiq-engine /path/to/augmentiq-plus`). For users without Docker, the 4 secondary backends (Obsidian, mem0, ReMe, Hermes native) still work.
 
@@ -211,11 +211,12 @@ When the configured backend is `custom` (AugmentIQ+ via MCP), the Skill launches
 
 The shipped v0.1 package includes:
 - `SKILL.md` (this file) — under 500 lines, under 5000 tokens
-- `references/` — 22 typed contracts + 4 per-category ingest directives + `mcp-integration.md` (v0.1) + `record-schema.md` (v0.1) + 4 compliance packs
+- `references/` — the typed contracts (principles, variables, commands, crons, flows, strategies, estimator, batch protocol, routing, PII patterns, dreaming-systems, questionnaire) + ingest directives (`references/ingest/`) + per-host agent references (`references/agents/`) + per-backend references (`references/backends/`) + `mcp-integration.md` (v0.1) + `record-schema.md` (v0.1); compliance packs ship in v0.1.1 (`references/compliance/`)
 - `assets/questionnaires/` — 4 JSON files (individual, team, department, organisation)
+- `assets/cron-templates/` — per-host cadence templates (Hermes YAML, OpenClaw JSON, launchd plist, systemd units)
 - `assets/email-templates/` — DSR templates
 - `assets/audit-templates/` — audit report templates
-- `assets/mcp-launch/` — 5 per-host launch scripts (hermes, openclaw, claude_code, codex, cursor)
-- `README.md`, `LICENSE` (MIT), `COMPATIBILITY.md`, `ECOSYSTEM_GAP_ANALYSIS.md`, `MARKETPLACE.md`, `MIGRATION_PLAYBOOK.md`, `CERTIFICATION.md`, `COMPLIANCE_POSITIONING.md`, `WEBSITE_READY.md`, `INSTALL_TEST.md`
+- `assets/mcp-launch/` — 6 per-host launch scripts (hermes, openclaw, claude_desktop, claude_code, codex, cursor)
+- `README.md`, `LICENSE` (MIT), `CHANGELOG.md`, `INSTALL_TEST.md`
 
 v0.1 = done when the install test (`INSTALL_TEST.md`) passes end-to-end on a clean install.

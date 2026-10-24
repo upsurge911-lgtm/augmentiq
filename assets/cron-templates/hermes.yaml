@@ -1,0 +1,14 @@
+# Hermes cron template — daily-snapshot cadence
+# Install to: ~/.hermes/cron/augmentiq-daily-snapshot.yaml
+# The agent substitutes <VALUES> during /augmentiq init.
+name: augmentiq-daily-snapshot
+schedule: "0 2 * * *"          # 02:00 daily — cadence default
+tz: "Asia/Dubai"               # <USER_TIMEZONE>
+prompt: |
+  Run /augmentiq snapshot now. Capture the state of the designated
+  sources per ~/.augmentiq/config.yaml. Apply per-batch confirmation
+  if more than 100 items (Principle 4). Write one timeline entry per
+  state change (Principle 5).
+# weekly-review:   "0 4 * * 0"   (Sunday 04:00)
+# monthly-retention: "0 3 1 * *"  (1st of month 03:00)
+# quarterly-audit:  last day of quarter 04:00 — Hermes computes the date
