@@ -5,7 +5,7 @@
     {
       "id": "Q1",
       "tier": 1,
-      "prompt": "What should I call this AugmentIQ setup? (e.g., 'personal', 'aaron-personal', 'amit-research')",
+      "prompt": "What should I call this AugmentIQ setup? (e.g., 'personal', 'work-research', 'team-projects')",
       "smart_default": "personal",
       "why_we_ask": "Used for the timeline prefix and the config filename. Anything readable works.",
       "type": "string",

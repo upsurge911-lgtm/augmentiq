@@ -1,279 +1,299 @@
-# Install Test Plan (AugmentIQ v0.0.1-alpha)
-
-> **Status: alpha test plan. Run on every host you target.**
->
-> The Skill's behavior in a live session is unverified at the time of
-> the v0.0.1-alpha release. This document is the test plan.
->
-> **Targets:** Hermes (primary), OpenClaw (secondary). Claude Code,
-> Codex, Cursor, nanobot are Tier 3 and not in the v0.0.1-alpha
-> acceptance test.
-
+---
+type: install-test
+status: ACTIVE — v0.1 install + functional test
+created: 2026-07-18
+author: AugmentIQ team
+supersedes: the v0.0.1-alpha plan
+tags: [augmentiq, install-test, e2e, hermes, openclaw, custom, v0.1]
 ---
 
-## 0. Pre-flight checks (do these before running the test)
+# Install Test Plan — AugmentIQ v0.1
 
-These are mechanical and should always pass on a clean install.
+> **This is the v0.1 install + functional test plan.** It supersedes
+> the v0.0.1-alpha plan (in the build folder, archived).
+> The v0.0.1-alpha plan covered the 4 secondary backends. The v0.1
+> plan adds the full Custom (AugmentIQ+ via MCP) integration test, now
+> that the install path and audit chain ownership are locked
+> (locked 2026-07-18).
+>
+> **The 3 test paths:**
+> 1. **Skill-only** — run `/augmentiq help` through `/augmentiq destroy`
+>    against a mocked MCP server. No Docker, no AugmentIQ+ container.
+>    Used during Skill development, before the AugmentIQ+ team ships the server.
+> 2. **Custom (AugmentIQ+ via MCP)** — full integration. Docker
+>    required, the `augmentiq-engine` image built. Used when
+>    the AugmentIQ+ container is ready.
+> 3. **Secondary backends** — Obsidian, mem0, ReMe, Hermes native.
+>    Per-backend, run only the parts that exercise the backend.
+
+## 0. Pre-flight checks (do these before any test path)
 
 ```bash
-# Check the install directory is present
-ls -la ~/.hermes/skills/augmentiq/ 2>/dev/null
-# Expect: SKILL.md, references/, assets/, LICENSE, README.md, CHANGELOG.md, PRD.md
+# 1. Install directory
+ls -la ~/.hermes/skills/augmentiq/
+# Expect: SKILL.md, references/, assets/, LICENSE, README.md, INSTALL_TEST.md
 
-# Check the SKILL.md frontmatter
-head -3 ~/.hermes/skills/augmentiq/SKILL.md
-# Expect: --- / name: augmentiq / description: ... / ---
+# 2. SKILL.md frontmatter
+head -10 ~/.hermes/skills/augmentiq/SKILL.md
+# Expect: --- / name: augmentiq / description: ... (description mentions AugmentIQ+ for Custom) / ---
 
-# Check the references tree
+# 3. References tree (should include mcp-integration.md)
 ls ~/.hermes/skills/augmentiq/references/
-ls ~/.hermes/skills/augmentiq/references/agents/
-ls ~/.hermit/skills/augmentiq/references/ingest/
-# (the last one should be 'ingest' not 'hermit' — fix if you see 'hermit')
+# Expect: PRINCIPLES.md, commands.md, crons.md, dreaming-systems.md, flows.md,
+#         mcp-integration.md, pii-patterns.md, questionnaire.md, record-schema.md,
+#         routing.md, strategies.md, variables.md, batch_protocol.md, estimator.md,
+#         ingest/, agents/, backends/
 
-# Check the questionnaires are real (not placeholders)
+# 4. MCP launch scripts
+ls ~/.hermes/skills/augmentiq/assets/mcp-launch/
+# Expect: hermes.sh, openclaw.sh, claude_code.sh, codex.sh, cursor.sh
+# Each is chmod +x and contains `docker run -i augmentiq-engine`
+
+# 5. Questionnaires are real
 for f in individual team department organisation; do
   size=$(stat -f%z ~/.hermes/skills/augmentiq/assets/questionnaires/$f.json)
   echo "$f.json: $size bytes"
 done
 # Expect: individual ~3.3KB, team ~5.1KB, department ~7.6KB, organisation ~9.3KB
-# A 67-75 byte file is a placeholder and means the install is broken.
 
-# Verify Hermes has indexed the skill
+# 6. Hermes indexed the skill
 hermes skills list | grep augmentiq
-# Expect: a line showing 'augmentiq' with status 'enabled' and scope 'local'
+# Expect: status 'enabled', scope 'local'
 ```
 
-**If any pre-flight check fails, do not proceed to the functional test.** The failure is in the install, not in the Skill.
+**If any check fails, do not proceed.** The failure is in the install, not the Skill.
 
 ---
 
-## 1. The functional test (the part that matters)
+## PATH 1: Skill-only test (no MCP server)
 
-Open a new chat in Hermes. In the first message, type the following commands **in order**. For each, verify the response.
+Use this when:
+- The Skill is being developed (frequent iteration)
+- The AugmentIQ+ container is not yet available
+- You're testing the Skill's logic in isolation
+
+**The mock:** the Skill is launched with `AUGMENTIQ_MOCK_MCP=1` in the environment. When this is set, the Skill's MCP client returns canned responses (a local JSONL of mocked record ids, a local search index of mocked results). The Skill's logic runs as if it were talking to a real MCP server; the storage side is faked.
 
 ### 1.1 `/augmentiq help` — the dispatch test
 
 **Command:** `/augmentiq help`
 
-**Expected behavior:** Hermes loads the SKILL.md, parses the 26-command list, returns the commands grouped by category:
-- Onboarding (4): init, status, reconfigure, destroy
-- Capture (3): snapshot, save, tag
-- Query (3): recall, timeline, who-knows
-- Compliance (5): audit, retention, redact, dsr, role
-- Migration (3): migrate, export, import
-- Legacy ingest (8): ingest + 7 sub-commands
-- Meta (1): help
+**Expected:** the 26 commands grouped (onboarding 4, capture 3, query 3, compliance 5, migration 3, legacy ingest 8, meta 1). The 5 Immutable Principles are referenced. The output mentions the 5 backends, with AugmentIQ+ (Custom) as the recommended for serious use.
 
-**Pass criteria:** all 26 commands listed. No error. The 5 Immutable Principles are referenced in the help output (or in the response to the next command).
+**Pass criteria:** all 26 commands listed, no error, the 5 backends shown with AugmentIQ+ as the recommended.
 
-**Fail modes:**
-- "Unknown command" or "Skill not found" → the skill didn't load. Fix: `hermes skills reload` or restart Hermes.
-- "Parse error" or "Malformed frontmatter" → the install is broken. Re-run the install.
-
-### 1.2 `/augmentiq status` — the read-only test
+### 1.2 `/augmentiq status` (pre-init)
 
 **Command:** `/augmentiq status`
 
-**Expected behavior:** per Principle 4, this is read-only. No confirmation prompt. The agent should:
-- Detect the host (Hermes)
-- Detect the memory backend (NOT YET CONFIGURED — fresh install)
-- Read `~/.augmentiq/config.yaml` if it exists (it does NOT — fresh install)
-- Return: "AugmentIQ is not initialised. Run /augmentiq init to configure."
+**Expected:** "AugmentIQ is not initialised. Run /augmentiq init to configure." No auto-trigger of init. (Per Principle 4: per-action confirmation.)
 
-**Pass criteria:** the agent does NOT auto-trigger `/augmentiq init`. It returns a clear "not initialised" message. (Per the SKILL.md description, the help should "remember this" cases that the user says without a slash command are NOT auto-triggered — but `/augmentiq status` is an explicit command, so it should respond.)
-
-**Fail modes:**
-- Agent runs `/augmentiq init` automatically → this is a Principle 4 violation. The agent should not auto-init. The user must explicitly invoke it.
-- Agent errors trying to read the config → the agent should handle the missing-file case gracefully.
-
-### 1.3 `/augmentiq init` — the write test (the one that matters)
+### 1.3 `/augmentiq init` (with mock)
 
 **Command:** `/augmentiq init`
 
+**With `AUGMENTIQ_MOCK_MCP=1`, pick the test path:** choose `organisation` tier, `custom` (AugmentIQ+ via MCP) as the backend. Walk the 22 questions. **The Skill should:**
+- Detect the mock and inform the user ("Running in mock mode — records will not persist; use this for testing only")
+- NOT launch Docker (the mock bypasses the launch)
+- Still ask the 22 questions (the questionnaire is backend-agnostic)
+- Show the per-action confirmation before writing `~/.augmentiq/config.yaml`
+
+**Pass criteria:** 22 questions asked in order, smart defaults pre-filled, confirmation shown, config written, mock-mode warning surfaced.
+
+### 1.4 `/augmentiq status` (post-init)
+
+**Expected:** the status block reflects the `organisation` tier + `custom` backend. The MCP server is reported as "mocked" (because `AUGMENTIQ_MOCK_MCP=1`).
+
+### 1.5 `/augmentiq save "test record"`
+
+**Expected:** confirmation prompt with record preview (classification: `internal` by default for organisation tier, tags: `[]`, source: `manual`). After confirm: mock returns a fake `augmentiq:<uuid>` id. The Skill's mock mode logs the action to `~/.augmentiq/timeline.jsonl.mock` (not the real timeline; the real timeline lives on the MCP server).
+
+### 1.6 `/augmentiq recall "test"`
+
+**Expected:** mock returns the record from step 1.5. The Skill formats and returns the match.
+
+### 1.7 `/augmentiq timeline --filter=save,init`
+
+**Expected:** 2+ entries (init + save), each with timestamp, action, actor (`user:<user_id>`), `user_confirmed: true`. The mock writes to `~/.augmentiq/timeline.jsonl.mock`.
+
+### 1.8 `/augmentiq audit --verify-chain`
+
+**Expected:** the Skill calls the (mocked) `mcp_get_audit_entry` for each entry, verifies the chain. Mock returns clean chain. Skill reports "Chain verified: N entries, no breaks."
+
+### 1.9 `/augmentiq destroy --keep-config`
+
+**Expected:** two confirmations (typed `destroy` then `destroy-permanently`). The Skill writes a destruction log to `~/.augmentiq/destroyed/<timestamp>.log`. The config is preserved.
+
+---
+
+## PATH 2: Custom (AugmentIQ+ via MCP) — full integration
+
+Use this when:
+- the AugmentIQ+ team has shipped the `augmentiq-engine` Docker image
+- You're verifying the full Skill ↔ MCP server wiring
+- You're running the install test as part of the v0.1 release gate
+
+**Prerequisites:**
+- Docker installed (`docker --version` works)
+- The `augmentiq-engine` image built (`docker images | grep augmentiq-engine`)
+- The Skill's per-host launch script is on the PATH (e.g., `~/.hermes/skills/augmentiq/assets/mcp-launch/hermes.sh`)
+
+### 2.1 Pre-flight (MCP-specific)
+
+```bash
+# Docker is available
+docker --version
+# Expect: Docker version 20.x or later
+
+# The image exists
+docker images augmentiq-engine
+# Expect: augmentiq-engine   latest   <sha256>   <date>   <size>
+
+# The launch script is executable
+ls -la ~/.hermes/skills/augmentiq/assets/mcp-launch/hermes.sh
+# Expect: -rwxr-xr-x
+
+# The Skill can invoke the script
+~/.hermes/skills/augmentiq/assets/mcp-launch/hermes.sh --check
+# Expect: "AugmentIQ+ launch script OK. Image: augmentiq-engine:latest. Will run: docker run -i augmentiq-engine"
+```
+
+### 2.2 `/augmentiq init` with Custom backend
+
+**Command:** `/augmentiq init`
+
+**Pick:** `organisation` tier, `custom` (AugmentIQ+ via MCP) as the backend. Walk the 22 questions.
+
 **Expected behavior:**
-1. Agent detects the host (Hermes) and the host's version.
-2. Agent asks the tier (individual, team, department, organisation).
-3. User picks `individual` (the smallest test path).
-4. Agent walks the 5 individual questions from `assets/questionnaires/individual.json`:
-   - Q1: name (default: "personal")
-   - Q2: memory backend (default: obsidian)
-   - Q3: location (default: auto-detect)
-   - Q4: auto-classification (default: yes)
-   - Q5: when to capture (default: manual_only)
-5. After every question, agent shows progress ("5 of 5").
-6. After all questions, agent computes cron set (manual_only = no crons).
-7. **Per Principle 4, agent shows a confirmation prompt** with the full plan: which crons (none), which sources (none), which compliance features (none), which schedule (manual only).
-8. User types `y` or `proceed` to confirm.
-9. Agent writes `~/.augmentiq/config.yaml` with the answers.
-10. Agent logs init to the timeline (`~/.augmentiq/timeline.jsonl`).
-11. Agent returns success message.
+- After the user confirms the config, the Skill writes `~/.augmentiq/config.yaml`.
+- The Skill then launches the MCP server via `assets/mcp-launch/hermes.sh`.
+- The launch script runs `docker run -i augmentiq-engine`. The container's stdio becomes the MCP channel.
+- The Skill verifies the server is responsive by calling `mcp_search_memory` with a `limit: 0` ping (a lightweight handshake).
+- If the server doesn't respond within 10 seconds, the Skill aborts init and tells the user to check the Docker image.
 
-**Pass criteria:**
-- The 5 questions are asked in order.
-- Smart defaults are pre-filled (Enter to accept).
-- The confirmation prompt is shown BEFORE writing the config.
-- After confirmation, the config file is written.
-- The timeline entry is written.
-- A success message is returned.
+**Pass criteria:** the MCP server is reachable, the handshake succeeds, the Skill reports "AugmentIQ+ connected. Audit chain initialized at <server-generated genesis hash>."
 
-**Fail modes:**
-- Agent skips the confirmation prompt → Principle 4 violation. STOP. This is the most important failure to catch.
-- Agent asks the questions but doesn't apply smart defaults → bad UX, not a blocker.
-- Agent writes the config but doesn't log to the timeline → Principle 5 violation. STOP.
-- Agent crashes during write (config partially written, timeline not written) → the agent should detect the partial write and roll back. If it doesn't, the user has to manually delete `~/.augmentiq/config.yaml` and start over.
+### 2.3 `/augmentiq save "test record"`
 
-### 1.4 `/augmentiq status` (post-init) — the verification test
-
-**Command:** `/augmentiq status`
-
-**Expected behavior:** now the config exists. The agent returns a status block:
-- Config: `~/.augmentiq/config.yaml` (modified <timestamp>)
-- Host: Hermes <version> on <os> (cron capable: yes/no)
-- Memory: <backend> at <location>
-- Scale: individual (5-question init complete)
-- Crons (0 active): [none — manual_only selected]
-- Compliance: [none — individual tier default]
-- Timeline: <N> events since init
-
-**Pass criteria:** the status block reflects what was configured. The 0-active-crons is correct for the manual_only selection.
-
-### 1.5 `/augmentiq save` — the record-write test
-
-**Command:** `/augmentiq save "test record from install test"`
+**Command:** `/augmentiq save "test record from v0.1 install test"`
 
 **Expected behavior:**
-1. Agent shows a confirmation prompt with the record preview:
-   - About to save 1 record
-   - Classification: <default for individual = internal>
-   - Tags: []
-   - Source: manual
-2. User confirms.
-3. Agent writes the record to the memory backend.
-4. Agent logs the save to the timeline.
-5. Agent returns the record id.
+- Skill shows confirmation prompt (classification: `internal` for org tier, PII patterns: `[]` for the test content, tags: `[]`).
+- User confirms.
+- Skill calls `mcp_add_memory` with the AugmentIQ Context Record (Schema A), the `audit_hash` cross-reference, and the `request_id`.
+- The server stores the record and writes the timeline entry. The server returns `{record_id, status: "ok", recorded_at: <server-set ISO 8601>}`.
+- Skill logs the action to the user's view: "Saved: augmentiq:<uuid>. Recorded at <server-set timestamp>."
 
-**Pass criteria:** the confirmation prompt is shown. The record is written. The timeline entry is written.
+**Pass criteria:** the server returns a record id, the Skill displays it, the action appears in `/augmentiq timeline`.
 
-**Fail modes:**
-- No confirmation prompt → Principle 4 violation.
-- Record not actually written (silent failure) → the agent must surface the write success/failure.
-
-### 1.6 `/augmentiq recall` — the read test
+### 2.4 `/augmentiq recall "test record"`
 
 **Command:** `/augmentiq recall "test record"`
 
-**Expected behavior:** agent searches the memory backend, returns the matching record(s). For a single test record, the response should be: 1 match, the record id, the record's content snippet.
+**Expected behavior:**
+- Skill calls `mcp_search_memory` with the query, scope (`organisation`), filters (no filters for the test), limit (10).
+- Server returns ranked records. For the single test record, the response is 1 match.
+- Skill formats and displays the record (id, content snippet, classification, tags, recorded_at).
 
-**Pass criteria:** at least 1 match returned. The match is the record from step 1.5.
+**Pass criteria:** 1 match returned, the match is the record from step 2.3.
 
-### 1.7 `/augmentiq timeline` — the audit log test
+### 2.5 `/augmentiq audit --verify-chain` — the integration-critical test
 
-**Command:** `/augmentiq timeline --filter=save,init`
-
-**Expected behavior:** agent returns the timeline entries for the init action and the save action. Each entry has: timestamp, action, actor, user_confirmed, record id (for save).
-
-**Pass criteria:** at least 2 entries (init + save). The user_confirmed field is true for both.
-
-### 1.8 `/augmentiq destroy --keep-config` — the teardown test (the read-only teardown)
-
-**Command:** `/augmentiq destroy --keep-config`
+**Command:** `/augmentiq audit --verify-chain`
 
 **Expected behavior:**
-1. Agent shows the first confirmation prompt:
-   - This will:
-     - Disable 0 crons
-     - Stop 0 legacy ingest sources
-     - Log the destruction to `~/.augmentiq/destroyed/`
-2. User types `destroy` to confirm.
-3. Agent shows the second confirmation prompt:
-   - This is irreversible (without a backup). Type `destroy-permanently` to confirm.
-4. User types `destroy-permanently` to confirm.
-5. Agent writes the destruction log to `~/.augmentiq/destroyed/<timestamp>.log`.
-6. Agent logs the destruction to the timeline.
-7. Config is preserved (--keep-config flag).
+- Skill queries the timeline: `mcp_search_memory` with `filters.action = "*"`, large `limit`.
+- For each entry, Skill calls `mcp_get_audit_entry(record_id)` to get the entry's `{audit_hash, previous_hash, timestamp, action}`.
+- Skill recomputes `audit_hash` for each entry (using the formula in `references/record-schema.md` §2.4) and compares.
+- Skill verifies each `previous_hash` matches the previous entry's `audit_hash`.
+- Skill reports the result: "Chain verified: N entries, no breaks" or "Chain broken at entry <id>: stored hash X, computed hash Y."
 
-**Pass criteria:** both confirmations are required. The destruction log is written. The config is preserved. The timeline entry is written.
+**Pass criteria:** chain verifies clean. This is the proof that the server-owned audit is working end-to-end.
 
-**Fail modes:**
-- Agent skips the confirmations → Principle 4 violation. STOP.
-- Agent deletes the config despite `--keep-config` → catastrophic Principle 4 violation. STOP.
-- Agent doesn't write the destruction log → the proof of teardown is missing.
+### 2.6 `/augmentiq export --include=timeline`
 
-### 1.9 Post-test verification
+**Command:** `/augmentiq export --include=timeline --format=jsonl`
 
-```bash
-# Check the destruction log was written
-ls ~/.augmentiq/destroyed/
-# Expect: a file named <timestamp>.log
+**Expected behavior:**
+- Skill fetches the full timeline via `mcp_search_memory`.
+- Skill fetches the full record set via `mcp_search_memory` with a broad query.
+- Skill writes a portable JSONL file at `~/.augmentiq/exports/<timestamp>.jsonl` containing all records + all timeline entries.
+- The export follows the canonical schema (see `references/record-schema.md` §1.1 for the record shape, §2.1 for the timeline shape).
 
-# Check the config is preserved
-cat ~/.augmentiq/config.yaml
-# Expect: the original config from step 1.3
+**Pass criteria:** the export file is created, contains all records + timeline entries, follows the schema.
 
-# Check the timeline is intact
-wc -l ~/.augmentiq/timeline.jsonl
-# Expect: at least 4 lines (init, save, recall, destroy)
+### 2.7 `/augmentiq destroy --wipe-data` (the full teardown)
 
-# Check the test record is gone (destroy did not delete it, but verify the user's intent)
-# (The test record is in the memory backend, not in AugmentIQ's directory.)
-```
+**Command:** `/augmentiq destroy --wipe-data`
+
+**Expected behavior:**
+- First confirmation prompt: "This will: disable N crons, stop N ingest sources, wipe all records from the MCP server, log the destruction."
+- User types `destroy`.
+- Second confirmation prompt: "This is irreversible. Type `destroy-permanently` to confirm."
+- User types `destroy-permanently`.
+- For each record: Skill calls `mcp_delete_memory(record_id, delete_type: "destroy", ...)`. The server removes the record and writes a timeline entry.
+- The Skill writes a destruction log to `~/.augmentiq/destroyed/<timestamp>.log`.
+- The Skill stops the MCP server container.
+- The Skill removes the config.
+
+**Pass criteria:** all records deleted, all timeline entries written, destruction log created, MCP server stopped, config removed.
 
 ---
 
-## 2. The OpenClaw test (secondary)
+## PATH 3: Secondary backends (Obsidian, mem0, ReMe, Hermes native)
 
-The OpenClaw test mirrors the Hermes test with these adjustments:
-- The install path is `~/.openclaw/workspace/skills/augmentiq/`.
-- The cron format is JSON entries in `~/.openclaw/openclaw.json` under the `cron` key (vs Hermes's YAML).
-- The slash command dispatch is via OpenClaw's skills loader.
-- The memory backend detection may differ (OpenClaw has its own memory system, so the hermes_native detection is irrelevant).
+For each backend, run only the parts of PATH 1 / PATH 2 that exercise the backend. The Skill's per-backend reference (`references/backends/<name>.md`) documents the per-backend specifics.
 
-**If the Hermes test passes and the OpenClaw install + dispatch work, the OpenClaw test passes by analogy.** The per-host-agent ref in `references/agents/openclaw.md` documents the per-host specifics.
+### 3.1 Obsidian
+
+- Skip 2.2 (the MCP handshake). Instead, verify the vault path is writable.
+- Run 2.3-2.6 against the Obsidian vault. Records are written as Markdown files with YAML frontmatter. The timeline is a JSONL sidecar.
+- The per-backend reference documents the path layout: `<vault>/<classification>/<scope>/<source>/<safe_title>.md`.
+
+### 3.2 mem0
+
+- Skip 2.2. Verify the `MEM0_API_KEY` env var is set.
+- Run 2.3-2.6 against the mem0 instance. Records are wrapped in mem0's user/system message format; metadata goes in mem0's `metadata` field.
+- The per-backend reference documents the per-user / per-tenant config.
+
+### 3.3 ReMe
+
+- Skip 2.2. Verify the ReMe directory is initialized (`reme init` was run).
+- Run 2.3-2.6 against the ReMe directory. Records are committed via Git. The timeline is the Git log.
+- The per-backend reference documents the commit cadence.
+
+### 3.4 Hermes native
+
+- Skip 2.2. Verify `~/.hermes/memories/MEMORY.md` exists and has space.
+- Run 2.3-2.6 against the Hermes MEMORY.md + USER.md. Records are appended to the daily log. The timeline is the daily log.
+- **Caveat:** the 2200-char MEMORY.md limit + 1375-char USER.md limit apply. Records that exceed the limit are split or summarized.
 
 ---
 
-## 3. Pass / fail decision
+## Pass / fail decision
 
-The v0.0.1-alpha is "release-ready" when:
+The v0.1 is "release-ready" when:
 
-- All 9 functional tests (1.1 - 1.9) pass on Hermes.
-- The pre-flight checks (section 0) all pass.
-- No Principle violations observed (no unconfirmed writes, no silent failures, no data loss without explicit destroy).
+- All pre-flight checks (§0) pass.
+- PATH 1 (Skill-only) passes on Hermes.
+- PATH 2 (Custom) passes on Hermes (requires the AugmentIQ+ container).
+- At least 1 PATH 3 test passes (validates that the secondary backends are not broken by the v0.1 changes).
+- No Principle violations observed: no unconfirmed writes, no silent failures, no data loss without explicit destroy, no chain breaks.
 
 If any test fails, **do not promote to v0.1.0**. Fix the failure, re-run the failing test, re-run the full suite, then promote.
 
----
+## Reporting failures
 
-## 4. What this test plan does NOT cover
-
-- **The Custom (AugmentIQ+ MCP) backend** is not tested in this alpha because the AugmentIQ+ MCP server is not yet released (per Antigravity, install path is `docker run -i augmentiq-engine`, but the image is not yet public). When the MCP server is released, add:
-  - `/augmentiq init` with `custom` as the backend — verify the Skill launches the MCP server as a subprocess.
-  - `/augmentiq save` with Custom backend — verify the Skill calls `mcp_add_memory` and gets a record id back.
-  - `/augmentiq recall` with Custom backend — verify the Skill calls `mcp_search_memory` and gets results back.
-  - `/augmentiq destroy` with Custom backend — verify the Skill calls `mcp_delete_memory` for each record (or relies on the MCP server's bulk-delete if it has one).
-
-- **The 4 compliance packs** are not tested because they're not yet drafted. When the packs land in v0.1.0, add:
-  - GDPR pack: DSR workflow test (`/augmentiq dsr --type=erasure`), retention enforcement test, audit report generation test.
-  - SOC2 pack: same as GDPR but with SOC2 control mapping.
-  - HIPAA pack: same but with HIPAA identifier detection.
-  - ISO 27001 pack: same but with ISO 27001 control mapping.
-
-- **The legacy ingest** is not tested in this alpha because the per-source legacy data is environment-specific. When the migration playbook lands, add per-source tests.
-
-- **The Hermes-native backend** is not tested separately because the Skill's `custom.md` reference documents the contract; the actual Hermes MEMORY.md is the user's personal file.
-
----
-
-## 5. Reporting failures
-
-If you find a failure, capture:
-1. The exact command you ran.
+If a test fails, capture:
+1. The exact command.
 2. The exact error message (verbatim).
-3. The state of `~/.augmentiq/` before and after (e.g., `ls -la ~/.augmentiq/`).
-4. The relevant timeline entry (e.g., `cat ~/.augmentiq/timeline.jsonl | tail -5`).
+3. The Skill's stderr output (for MCP errors, check the JSON-RPC code from `references/record-schema.md` §4).
+4. The state of `~/.augmentiq/` before and after (`ls -la`).
+5. The relevant timeline entries (via `/augmentiq timeline --filter=<action>`).
+6. The Docker container logs (for PATH 2 failures): `docker logs <container_id>`.
 
-Then report to the Skill author (Robin / AugmentIQ maintainer) with the captured state. The Skill author will reproduce the failure, identify the root cause (per the `systematic-debugging` discipline), and ship a fix.
+Report to the AugmentIQ maintainers with the captured state. The Skill author reproduces, identifies root cause, ships a fix.
 
 ---
 
-**End of install test plan.**
+**v0.1, locked 2026-07-18. Re-validate when the AugmentIQ+ team ships the v1 of the augmentiq-engine image, or at v0.1.1, whichever comes first.**

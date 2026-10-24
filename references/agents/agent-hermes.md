@@ -7,7 +7,7 @@
 
 ## What Hermes is
 
-Hermes is the local-first AI agent that the user (Amit) runs on
+Hermes is the local-first AI agent that the user runs on
 macOS. It's the host that loads AugmentIQ as a skill and executes
 the directives. Hermes has its own memory, its own tool set, its own
 cron system.
@@ -39,7 +39,7 @@ Hermes provides: `read_file`, `write_file`, `patch`, `search_files`,
   URLs, not local paths. Convert to `file://` or `data:` URL first.
 - **`write_file` on sibling-subagent path warns** but overwrites.
   Re-read to verify.
-- **24GB RAM limit:** Ollama 9B comfortable, 14B tight, 30B+ requires cloud.
+- **RAM constraints:** local LLM sizes are limited by available RAM. For specific sizing, check the Hermes project's published specs.
 - **`read_file` 100KB limit:** for larger files, use `terminal` with
   `cat` / `head` / `tail` in chunks.
 
@@ -97,5 +97,5 @@ For the user, the value of Hermes + AugmentIQ:
 
 - The Agent Skills spec: https://agentskills.io/specification
 - Hermes session context: per the user's MEMORY.md and the active session state.
-- User's MEMORY.md (system prompt): for Hermes quirks and the 24GB RAM constraint.
+- User's MEMORY.md (system prompt): for Hermes quirks and the local LLM sizing.
 - `~/.hermes/config.yaml` and `~/.hermes/SOUL.md` for the local install.

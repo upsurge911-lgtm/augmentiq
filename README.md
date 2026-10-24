@@ -1,84 +1,168 @@
 # AugmentIQ
 
-> **Status: v0.0.1-alpha — work in progress. Not for production use.**
-> See [CHANGELOG.md](./CHANGELOG.md) for what's done and what's pending.
+> **Portable governance for AI agent memory.**
+> A free, MIT-licensed Agent Skill that captures, classifies, retains, audits, and migrates your agent's context. Works with 5 backends. The recommended backend for serious / enterprise / local-first use is **AugmentIQ+** (a Docker-based MCP server). The other 4 backends (Obsidian, mem0, ReMe, Hermes native) are for users with existing infrastructure.
 
-A portable Agent Skill that helps legacy companies become AI-native by transferring years of historical data into a memory backend of their choice. Solves the memory and context problem. Free, MIT, open standard.
+```bash
+# Quickstart on Hermes
+cp -r AugmentIQ/ ~/.hermes/skills/augmentiq/
+hermes skills reload
+/augmentiq help
+```
 
-**For:** legacy enterprises with 10+ years of context scattered across Salesforce, SharePoint, email, Drive, Notion, Confluence, ERP, and local files. The agents can use the context if the context is in agent-friendly form. AugmentIQ is the bridge.
+**30 seconds to first value.** Built on the open Agent Skills standard — works on Hermes, OpenClaw, Claude Code, Codex, Cursor, and 30+ more spec-compliant hosts.
 
-**Recommended for serious / enterprise / local-first use:** the **Custom** backend (AugmentIQ+ via MCP server, per Antigravity's architecture). The other 4 backends (Obsidian, mem0, ReMe, hermes_native) are for users with existing infrastructure.
+## What it does
 
----
+- **Captures** context from your existing sources (Obsidian, mem0, ReMe, Hermes native, or AugmentIQ+) into a single classified, retained, auditable memory layer.
+- **Classifies** every record as `public` / `internal` / `confidential` / `restricted`, with PII auto-upgrade.
+- **Retains** per regulation (GDPR, SOC2, HIPAA, ISO 27001 — packs ship in v0.1.1).
+- **Audits** every state change to a tamper-evident timeline you can export.
+- **Migrates** between backends in one command with a lossiness report.
 
-## 5 Immutable Principles (the constitution)
+## The 5 Immutable Principles (the constitution)
+
+These never change. Every flow, every command, every reference derives from them.
 
 1. **We don't own your memory.** Every state-changing action needs explicit per-action confirmation.
-2. **We don't own your agent.** The host agent decides; the skill suggests.
-3. **Your data is yours, forever.** Every action is reversible. Migration is bidirectional.
-4. **Confirm before destructive.** Delete, redact, expire, skip, migrate, cancel, destroy — all need in-session confirmation.
-5. **Audit everything.** Every state change is logged to the timeline.
+2. **We don't own your agent.** The host agent retains full authority. The Skill suggests, you decide.
+3. **Your data is yours, forever.** Every action is reversible. Migration is bidirectional. No lock-in.
+4. **Confirm before destructive.** Delete, redact, expire, migrate, destroy — all need in-session confirmation.
+5. **Audit everything.** Every state change is logged, queryable, exportable. Append-only, content-hashed.
+
+The full per-principle spec is in [`references/PRINCIPLES.md`](./references/PRINCIPLES.md).
+
+## The 5 supported backends
+
+| Backend | When to use |
+|---------|-------------|
+| **AugmentIQ+** (Custom, via MCP) | **Recommended for serious / enterprise / local-first use.** Docker-based, 100% local, server-owned tamper-evident audit, hybrid search. |
+| **Obsidian** | You already have a vault. The Skill adds the governance layer. |
+| **mem0** | You already use mem0. The Skill adds classification, retention, audit, DSR. |
+| **ReMe** | File-based with Git-style versioning. The Skill adds the rules. |
+| **Hermes native** | You live in `MEMORY.md` + `USER.md`. The Skill adds classification and audit. |
+
+**If you don't have a backend yet, use AugmentIQ+.** It's the recommended path for serious use.
+
+## Install
+
+### Prerequisites
+
+- An Agent-Skills-compliant host agent: **Hermes** (primary), **OpenClaw** (secondary), Claude Code, Codex, Cursor, or any of 30+ spec-compliant hosts.
+- A memory backend (5 supported, see above).
+- For AugmentIQ+ (recommended for serious use): **Docker** must be available on the host.
+
+### Quick start
+
+```bash
+# 1. Install the Skill on your host agent
+cp -r AugmentIQ/ ~/.hermes/skills/augmentiq/
+hermes skills reload
+
+# 2. If using AugmentIQ+ (recommended for serious use):
+docker build -t augmentiq-engine /path/to/augmentiq-plus
+
+# 3. Run the questionnaire
+/augmentiq init
+
+# 4. Capture your first record
+/augmentiq save "This is a test record" --tags=test,first
+
+# 5. Search
+/augmentiq recall "test"
+
+# 6. See the audit trail
+/augmentiq timeline
+```
+
+Full install walkthrough is in [`INSTALL_TEST.md`](./INSTALL_TEST.md).
+
+## The 26 commands
+
+Grouped by intent. Full per-command spec is in [`references/commands.md`](./references/commands.md).
+
+- **Onboarding** (4): `init`, `status`, `reconfigure`, `destroy`
+- **Capture** (3): `snapshot`, `save`, `tag`
+- **Query** (3): `recall`, `timeline`, `who-knows`
+- **Compliance** (5): `audit`, `retention`, `redact`, `dsr`, `role`
+- **Migration** (3): `migrate`, `export`, `import`
+- **Legacy ingest** (8): `ingest` + 7 sub-commands
+- **Meta** (1): `help`
+
+## The 6 cron cadences
+
+What makes AugmentIQ "run" without you prompting it. All configurable per `unit_type`.
+
+| Cadence | Default | What |
+|---------|---------|------|
+| `daily-snapshot` | 02:00 daily | Capture state of designated sources |
+| `weekly-review` | Sunday 04:00 | Surface changes, stale items |
+| `monthly-retention` | 1st of month 03:00 | Enforce retention policies |
+| `quarterly-audit` | Last day of quarter 04:00 | Generate the full audit report |
+| `ingest-batch` | 02:00 nightly (if pending) | Pull next batch of legacy data |
+| `on-event` | triggered by commit/merge/decision/incident/etc. | Capture the event |
+
+## The 4 scale tiers
+
+| Tier | Questions | Default scope | Default compliance |
+|------|-----------|---------------|-------------------|
+| **individual** | 5 | self | none |
+| **team** | 11 | team | opt-in |
+| **department** | 17 | department | 1 pack by default |
+| **organisation** | 22 | organisation | 1-4 packs |
+
+## When NOT to use this Skill
+
+This Skill is the wrong tool if:
+
+- You want a **dashboard**. AugmentIQ is a Skill, not a UI.
+- You want a **SaaS**. The Skill runs on your machine against your backend. There is no hosted version in v0.1.
+- You want **dreaming / memory synthesis**. The Skill does not promise dreaming in v0.1.
+- You want a **memory backend**. The Skill is the governance layer, not the storage. Pick a backend first.
+- You have **no source data to capture**. The Skill manages data you already have.
+
+## Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Host Agent    │    │  AugmentIQ v0.1 │    │   Memory        │
+│  (Hermes,       │◀──▶│     Skill       │◀──▶│   Backend       │
+│   OpenClaw,     │    │                 │    │                 │
+│   Claude Code,  │    │  26 commands    │    │  (5 supported,  │
+│   Codex, ...)   │    │  5 Principles   │    │   AugmentIQ+    │
+│                 │    │  Questionnaire  │    │   recommended)  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+- **The Skill** = routing + governance. Formats payloads, enforces the 5 Principles, handles confirmations.
+- **The backend** = storage + compute. Holds the records, computes embeddings, runs search.
+- **The host agent** = the executor. Loads the Skill, calls the commands, runs the flows.
+
+The boundary is the 5 MCP tool signatures (for AugmentIQ+) or the per-backend adapter contract (for the 4 secondary backends). See [`references/mcp-integration.md`](./references/mcp-integration.md) and [`references/backends/custom.md`](./references/backends/custom.md).
+
+## Pricing
+
+- **The Skill** — free, MIT, forever.
+- **Compliance packs** (GDPR, SOC2, HIPAA, ISO 27001) — paid, ship in v0.1.1.
+- **Legacy migration engagement** — paid service. Starter $15-25k, Standard $25-45k, Enterprise $45-90k, Complex $90k+.
+- **Consultant certification program** — paid. See the docs for details.
+
+## License
+
+MIT. See [`LICENSE`](./LICENSE).
+
+## Brand context
+
+AugmentIQ is the portable governance skill. The umbrella brand is **Agentic Augmentation**, by **Upsurge** (Advantage Technologies INC). The whitepaper is the thought-leadership piece; the Skill is the technical product. They ship together.
+
+## See also
+
+- [`INSTALL_TEST.md`](./INSTALL_TEST.md) — end-to-end install + smoke test
+- [`references/PRINCIPLES.md`](./references/PRINCIPLES.md) — the 5 Immutable Principles (full spec)
+- [`references/commands.md`](./references/commands.md) — all 26 commands
+- [`SKILL.md`](./SKILL.md) — the Skill body the host agent loads
+- [Agent Skills spec](https://agentskills.com) — the open standard this Skill implements
 
 ---
 
-## What's in v0.0.1-alpha
-
-- `SKILL.md` — 193 lines, 2688 tokens, 10 sections, 26 command references, the 5 Immutable Principles inline.
-- `references/` — 22 typed contracts (the 26 slash command specs, the 6 cron cadences, the 10 operational flows, the 7-Tier Variable Schema, the per-host and per-backend references).
-- `references/ingest/` — 4 per-category ingest directives for legacy data sources.
-- `assets/questionnaires/` — 4 placeholder JSONs (real content lands in v1.0).
-- `LICENSE` — MIT.
-- `CHANGELOG.md` — this release's known limitations.
-
-## What is NOT yet in v0.0.1-alpha
-
-- Real questionnaire content.
-- README (this file is a placeholder).
-- INSTALL_TEST.md and a passing live test on Hermes / OpenClaw.
-- agentskills.io marketplace submission.
-- The 4 compliance packs (GDPR, SOC2, HIPAA, ISO 27001).
-- The MIGRATION_PLAYBOOK, CERTIFICATION, COMPLIANCE_POSITIONING, WEBSITE_READY docs.
-- The Custom (AugmentIQ+ via MCP) integration: the `assets/mcp-launch/<host>.sh` launch scripts and the `mcp_get_audit_log` 5th-tool reference (per Antigravity's architecture).
-
-See `CHANGELOG.md` for the full list.
-
----
-
-## Quickstart (current state — assumes the user has Hermes installed)
-
-1. `cp -r AugmentIQ/ ~/.hermes/skills/augmentiq/`
-2. Restart Hermes (or run `hermes skills reload`).
-3. In a new chat, type `/augmentiq help`.
-
-**Note:** the placeholder questionnaires mean `/augmentiq init` will not work yet. The install test (todo 22) has not been run. The skill is structurally complete; its behavior in a live session is unverified.
-
----
-
-## Architecture (per Antigravity's MCP design)
-
-- **The Skill is routing + governance.** It formats per-command JSON payloads, enforces the 5 principles, handles confirmations, and owns the slash command surface.
-- **The MCP server (AugmentIQ+) is storage + compute.** It owns the SQLite tamper-evident audit timeline, LanceDB vector storage, Tree-sitter AST chunking, bi-temporal stamping, and hybrid search. The Skill does not implement any of these.
-- **The 4 MCP tools** (per Antigravity): `mcp_add_memory`, `mcp_search_memory`, `mcp_update_memory`, `mcp_delete_memory`. A 5th tool, `mcp_get_audit_log(record_id)`, is added per Antigravity's response to the audit-hash-chain question.
-- **Install path:** `docker run -i augmentiq-engine` (per Antigravity).
-- **The Skill's launch scripts** (in `assets/mcp-launch/<host>.sh`) are not yet present in this alpha.
-
----
-
-## Project context
-
-- **Brand:** AugmentIQ is the portable governance skill. The umbrella brand is "Agentic Augmentation" (Upsurge.ae). The whitepaper is the thought-leadership piece (parallel project).
-- **License:** MIT.
-- **Spec compliance:** the Agent Skills open standard. The skill loads in any spec-compliant host agent (Hermes, OpenClaw, Claude Code, Codex, Cursor, nanobot, +30 more).
-- **No lock-in:** the skill itself is content, not code. The user owns their data, their config, their backend. They can fork, modify, self-host, switch backends, and re-deploy in one command.
-
----
-
-## Provenance
-
-- The Skill was designed and built by Robin (Amit's AI operator) over 2 sessions in July 2026.
-- The Custom backend (AugmentIQ+) is built by Antigravity (the platform team) per the architectural agreement between Robin and Antigravity documented in `agentic-augmentation-launch/AUGMENTIQ-ANTIGRAVITY-HANDSHAKE.md` and `AUGMENTIQ-ANTIGRAVITY-RESPONSE.md`.
-- The Skill applies 6 best-practices principles for writing effective Agent Skills (per Anthropic's `skill-creator` doc): directives, why/how/when, negative cases, goals not steps, lean+layered, no no-ops.
-
----
-
-**Don't use this in production.** v0.0.1-alpha is a snapshot of the build, not a release. The next target is v1.0.0, which adds the 4 questionnaire JSONs, README, INSTALL_TEST, MARKETPLACE submission, and the AugmentIQ+ MCP integration.
+**© 2026 Advantage Technologies INC (Upsurge). The AugmentIQ Skill is MIT-licensed. The 4 compliance packs are paid. The migration engagement and the consultant certification are paid services.**

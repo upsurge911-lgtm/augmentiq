@@ -308,7 +308,7 @@ The 5 principles are versioned with the skill:
 - **v1.0+** — principles are stable, contract-grade. Compliance packs cite them.
 - **v2.0** — only if a 6th principle is added (see process above).
 
-The AugmentIQ core team (currently: Amit + this skill) commits to not relaxing any
+The AugmentIQ core team commits to not relaxing any
 of the 5 principles without a major version bump and a public changelog entry.
 
 ---

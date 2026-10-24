@@ -1,13 +1,14 @@
 ---
 name: augmentiq
-description: Govern a memory backend for an AI agent. Use when the user asks to set up, configure, capture to, recall from, retain, audit, redact, fulfill a DSR, migrate, or destroy an agent's persistent memory. NOT for ephemeral chat memory, RAG pipelines, fine-tuning datasets, prompt caches, or general observability. Triggers on /augmentiq <subcommand>.
+description: Govern a memory backend for an AI agent. Captures, classifies, retains, audits, redacts, migrates, and destroys. Works with 5 backends: AugmentIQ+ (Custom, via MCP — recommended for serious/enterprise/local-first use), Obsidian, mem0, ReMe, and Hermes native. Use when the user asks to set up, configure, capture to, recall from, retain, audit, redact, fulfill a DSR, migrate, or destroy an agent's persistent memory. NOT for ephemeral chat memory, RAG pipelines, fine-tuning datasets, prompt caches, or general observability. Triggers on /augmentiq <subcommand>.
 ---
 
 # AugmentIQ
 
 > Portable Agent Skill that helps legacy companies become AI-native
 > by transferring years of historical data into a memory backend of
-> their choice (Obsidian, mem0, ReMe, Hermes native, or Custom) on a
+> their choice (AugmentIQ+ via MCP — recommended for serious/enterprise/
+> local-first use, plus Obsidian, mem0, ReMe, and Hermes native) on a
 > platform that supports the open Agent Skills standard. Solves the
 > memory and context problem. Free, MIT, v0.1.
 
@@ -37,11 +38,12 @@ The 5 Immutable Principles apply on every action. Read `references/PRINCIPLES.md
 1. Parse the subcommand. Match against the 26 in `references/commands.md`.
 2. Dispatch to the matching flow in `references/flows.md`.
 3. Apply the 5 principles: confirmation per Principle 4, audit per Principle 5, reversibility per Principle 3.
-4. Write one timeline entry per state change. The timeline is append-only, content-hashed.
+4. If the configured backend is `custom` (AugmentIQ+ via MCP), call the appropriate MCP tool (5 tools; see `references/mcp-integration.md` and `references/record-schema.md` §3). The MCP server is the storage + compute layer; the Skill is the routing + governance layer.
+5. Write one timeline entry per state change. The timeline is **server-owned** (for the Custom backend; per the integration contract locked 2026-07-18). The server computes the hash chain; the Skill calls `mcp_get_audit_entry` for verification.
 
 **Negative case:** if the user said "remember this" without a slash command, do not auto-trigger. Confirm with the user first ("Did you mean `/augmentiq save`?").
 
-See `references/commands.md` for the full command spec. See `references/flows.md` for the goal + constraints per flow.
+See `references/commands.md` for the full command spec. See `references/flows.md` for the goal + constraints per flow. See `references/mcp-integration.md` for the MCP wiring (when Custom backend is in use).
 
 ## 3. The 26 slash commands (one line each)
 
@@ -118,6 +120,8 @@ Apply on every action. The full text + mechanisms + citations are in `references
 4. **Confirm before destructive. Always offer pre-destroy export.**
 5. **Audit every state change to the timeline. The timeline is portable.**
 
+**Note on Principle 5 (v0.1):** the timeline is server-owned when the Custom backend (AugmentIQ+ via MCP) is in use. The server computes the hash chain; the Skill reads it back via `mcp_get_audit_entry` for verification. The Skill does not maintain a local `timeline.jsonl` — the server's tamper-evident SQLite table IS the timeline. See `references/mcp-integration.md` for the verification flow.
+
 ## 7. The 7-Tier Variable Schema (pointer)
 
 Config lives in `~/.augmentiq/config.yaml`. The 7 tiers (Identity, Host, Memory, Compliance, Capture, Legacy, Advanced) and 38 variables are specified in `references/variables.md`. The user can edit YAML directly; the agent reads it on every action.
@@ -126,9 +130,16 @@ Config lives in `~/.augmentiq/config.yaml`. The 7 tiers (Identity, Host, Memory,
 
 ## 8. The supported set (backends + host agents)
 
-**Backends (5):** `obsidian`, `mem0`, `reme`, `hermes_native`, `custom`. Per-backend behavior in `references/backends/<name>.md`.
+**Backends (5, in recommended order for serious/enterprise/local-first use):**
+1. **`custom`** — AugmentIQ+ via MCP. Docker-based, 100% local, server-owned tamper-evident audit, hybrid search. **Recommended for `organisation` and `department` tiers, and for any user who wants the full AugmentIQ feature set with full storage guarantees.** See `references/backends/custom.md` + `references/mcp-integration.md`.
+2. `obsidian` — local-first Markdown. The default individual choice if the user already has a vault.
+3. `mem0` — cloud memory layer, multi-user. The default team choice if the user already has mem0.
+4. `reme` — file-based with Git-style versioning. For compliance-conscious users.
+5. `hermes_native` — `~/.hermes/memories/MEMORY.md` (2200 chars) + `USER.md` (1375 chars). For Hermes users only.
 
-**Host agents (6+):** `hermes` (primary, 24GB RAM, MEMORY.md + USER.md), `openclaw` (secondary, has dreaming per `dreaming-systems.md`), `claude_code` (external cron), `codex` (Tier 3), `cursor` (Tier 3), `nanobot` (Tier 3). Per-host behavior in `references/agents/<name>.md`. Common patterns (detection, install, cron, slash command) in `references/agents/_common.md`.
+Per-backend behavior in `references/backends/<name>.md`. The "when to use" section in each per-backend reference points users to Custom when the use case is serious/enterprise/local-first.
+
+**Host agents (6+):** `hermes` (primary, MEMORY.md + USER.md), `openclaw` (secondary, has dreaming per `dreaming-systems.md`), `claude_code` (external cron), `codex` (Tier 3), `cursor` (Tier 3), `nanobot` (Tier 3). Per-host behavior in `references/agents/<name>.md`. Common patterns (detection, install, cron, slash command) in `references/agents/_common.md`.
 
 **Negative case:** the body never duplicates per-backend or per-host quirks. The per-target reference handles the detail.
 
@@ -180,14 +191,31 @@ Step 2: "This is irreversible. Type 'destroy-permanently' to confirm."
 
 **The 5 principles produce 5 prompt shapes, applied across 26 commands.**
 
-## 10. Pointer to the v0.1 launch checklist
+## 10. The MCP integration (when `custom` backend is in use)
+
+When the configured backend is `custom` (AugmentIQ+ via MCP), the Skill launches the MCP server as a subprocess and communicates over stdio. The full wiring is in `references/mcp-integration.md`. The 5 tools, the 5-minute summary:
+
+1. **Launch.** The Skill invokes `assets/mcp-launch/<host>.sh`, which runs `docker run -i augmentiq-engine`. The container's stdio becomes the MCP channel. Docker must be available on the host.
+2. **Handshake.** On launch, the Skill calls `mcp_search_memory` with `limit: 0` to verify the server is responsive. If no response within 10s, the Skill aborts and tells the user to check the Docker image.
+3. **Per command.** The Skill formats the canonical AugmentIQ Context Record (per `references/record-schema.md` §1) and calls the appropriate MCP tool:
+   - **Writes** (`save`, `snapshot`, `tag`, `redact`): `mcp_add_memory` or `mcp_update_memory`.
+   - **Reads** (`recall`, `who-knows`, `timeline`, `audit`): `mcp_search_memory`.
+   - **Deletes** (`destroy --wipe-data`, `dsr --type=erasure`): `mcp_delete_memory`.
+   - **Audit verification** (`audit --verify-chain`): `mcp_get_audit_entry` per record.
+4. **Errors.** The server returns JSON-RPC 2.0 errors. The Skill surfaces a user-friendly message and logs the raw code to stderr. Error codes are in `references/record-schema.md` §4.
+5. **Launch scripts** are in `assets/mcp-launch/<host>.sh` (5 files: hermes, openclaw, claude_code, codex, cursor). The scripts are `chmod +x` and contain the per-host environment setup.
+
+**Hard dependency:** Docker. If the user wants the Custom backend, Docker must be installed and the `augmentiq-engine` image must be built (`docker build -t augmentiq-engine /path/to/augmentiq-plus`). For users without Docker, the 4 secondary backends (Obsidian, mem0, ReMe, Hermes native) still work.
+
+## 11. Pointer to the v0.1 launch checklist
 
 The shipped v0.1 package includes:
 - `SKILL.md` (this file) — under 500 lines, under 5000 tokens
-- `references/` — 22 typed contracts + 4 per-category ingest directives
+- `references/` — 22 typed contracts + 4 per-category ingest directives + `mcp-integration.md` (v0.1) + `record-schema.md` (v0.1) + 4 compliance packs
 - `assets/questionnaires/` — 4 JSON files (individual, team, department, organisation)
 - `assets/email-templates/` — DSR templates
 - `assets/audit-templates/` — audit report templates
-- `README.md`, `LICENSE` (MIT), `COMPATIBILITY.md`, `ECOSYSTEM_GAP_ANALYSIS.md`, `MARKETPLACE.md`, `MIGRATION_PLAYBOOK.md`, `CERTIFICATION.md`, `COMPLIANCE_POSITIONING.md`, `WEBSITE_READY.md`, `INSTALL_TEST.md`, `CHANGELOG.md`
+- `assets/mcp-launch/` — 5 per-host launch scripts (hermes, openclaw, claude_code, codex, cursor)
+- `README.md`, `LICENSE` (MIT), `COMPATIBILITY.md`, `ECOSYSTEM_GAP_ANALYSIS.md`, `MARKETPLACE.md`, `MIGRATION_PLAYBOOK.md`, `CERTIFICATION.md`, `COMPLIANCE_POSITIONING.md`, `WEBSITE_READY.md`, `INSTALL_TEST.md`
 
-v0.1 = done when the launch checklist in `PRD.md` is fully checked.
+v0.1 = done when the install test (`INSTALL_TEST.md`) passes end-to-end on a clean install.

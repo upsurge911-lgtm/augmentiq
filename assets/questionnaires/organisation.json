@@ -65,7 +65,7 @@
       "tier": 3,
       "prompt": "Where is the AugmentIQ+ MCP server located?",
       "smart_default": "docker:augmentiq-engine",
-      "why_we_ask": "The Skill launches the MCP server as a subprocess. Per Antigravity, the launch command is `docker run -i augmentiq-engine`. Override only if you've deployed the server elsewhere.",
+      "why_we_ask": "The Skill launches the MCP server as a subprocess. The launch command is `docker run -i augmentiq-engine`. Override only if you've deployed the server elsewhere.",
       "type": "string",
       "validation": "URL, Docker reference, or 'docker:augmentiq-engine'"
     },
