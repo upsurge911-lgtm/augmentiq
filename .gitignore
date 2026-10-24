@@ -10,5 +10,10 @@
 __pycache__/
 *.pyc
 
+# Plugin build artifacts (built locally, not committed)
+plugin/obsidian/node_modules/
+plugin/obsidian/main.js
+plugin/obsidian/main.js.map
+
 # Internal docs — never commit or push (repo is public)
 docs/internal/

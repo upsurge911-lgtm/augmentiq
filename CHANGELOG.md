@@ -4,6 +4,14 @@ All notable changes to AugmentIQ are documented here. Format follows [Keep a Cha
 
 ## [0.1.0] — 2026-10-24
 
+### Unreleased — the AugmentiQ Obsidian plugin (consumer product)
+- Embedded MCP server (127.0.0.1:3710, streamable HTTP, bearer auth) inside an Obsidian plugin — one install, zero Docker
+- 10 tools: the 5 contract tools (per `references/record-schema.md`) + consumer tools `memory`/`vault`/`edit`/`graph`/`system`
+- Hash-chained audit log in `.augmentiq/audit.log`; store in `.augmentiq/memories.jsonl` (Context Records per record-schema.md §1)
+- Read-only mode; delete-to-trash; lexical recall scoring (embeddings v1.1)
+- Backend reference: `references/backends/obsidian-plugin.md`
+- Deployed and dogfooding on the Robin's Brain vault since 2026-10-24 — 22/22 smoke checks, audit chain verified
+
 ### Added
 - **Claude Desktop** as a supported host (Tier 2): `references/agents/agent-claude_desktop.md`, `assets/mcp-launch/claude_desktop.sh`, install guide (`docs/public/install/claude-desktop.md`)
 - **`references/record-schema.md`** — the canonical types: Context Record, Timeline entry, the 5 MCP tool signatures, JSON-RPC error codes (completes the v0.1 contract)

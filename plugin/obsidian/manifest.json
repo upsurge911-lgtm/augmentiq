@@ -1,0 +1,10 @@
+{
+  "id": "augmentiq",
+  "name": "AugmentiQ",
+  "version": "0.1.0",
+  "minAppVersion": "1.6.6",
+  "description": "Your AI's memory, 100% local. An embedded MCP server gives any agent persistent memory in your Obsidian vault.",
+  "author": "Upsurge",
+  "authorUrl": "https://upsurge.ai",
+  "isDesktopOnly": true
+}

@@ -1,0 +1,18 @@
+{
+  "name": "augmentiq-obsidian",
+  "version": "0.1.0",
+  "description": "AugmentiQ — your AI's memory, 100% local. Embedded MCP server for your Obsidian vault.",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "build": "node esbuild.config.js",
+    "dev": "node esbuild.config.js --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.24.2",
+    "obsidian": "^1.7.2",
+    "typescript": "^5.7.3"
+  }
+}
