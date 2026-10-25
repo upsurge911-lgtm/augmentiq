@@ -17,3 +17,8 @@ plugin/obsidian/main.js.map
 
 # Internal docs — never commit or push (repo is public)
 docs/internal/
+
+# OpenClaw plugin build artifacts
+packages/openclaw-plugin/node_modules/
+packages/openclaw-plugin/dist/
+packages/openclaw-plugin/package-lock.json

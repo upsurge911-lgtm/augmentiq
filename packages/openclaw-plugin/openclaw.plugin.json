@@ -1,0 +1,32 @@
+{
+  "id": "augmentiq",
+  "name": "AugmentiQ",
+  "description": "Persistent agent memory in your Obsidian vault, via the AugmentiQ Obsidian plugin's embedded MCP server. Exposes the 5 AugmentIQ contract tools (governance-skill compatible) plus the consumer memory loop tool. 100% local: the server binds 127.0.0.1 only, bearer-token auth, hash-chained audit log.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "token": {
+        "type": "string",
+        "description": "Bearer token for the AugmentiQ MCP server. Copy from the Obsidian plugin (ribbon icon or Settings → AugmentiQ). Prefer a SecretRef: {\"$ref\": \"secrets://AUGMENTIQ_TOKEN\"}."
+      },
+      "baseUrl": {
+        "type": "string",
+        "description": "MCP endpoint URL. Default: http://127.0.0.1:3710/mcp"
+      }
+    }
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "tools": [
+      "augmentiq_memory",
+      "mcp_add_memory",
+      "mcp_search_memory",
+      "mcp_update_memory",
+      "mcp_delete_memory",
+      "mcp_get_audit_entry"
+    ]
+  }
+}
