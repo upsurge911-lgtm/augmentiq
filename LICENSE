@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Amit / Upsurge.ae
+Copyright (c) 2026 Upsurge (Advantage Technologies INC)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +19,19 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Commercial use
+
+This MIT license covers the AugmentiQ plugin and skill in full. You may use,
+modify and redistribute them commercially at no cost.
+
+Separately licensed, and not covered by the MIT grant above:
+
+  - AugmentIQ+ (the Docker-based MCP backend) — commercial license
+  - Compliance packs (GDPR, SOC 2, HIPAA, ISO 27001) — commercial license
+  - Legacy-data ingest tooling — commercial engagement
+  - Supported deployment and multi-user organisation tiers — commercial engagement
+
+For any of the above: customdev@upsurge.ae

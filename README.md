@@ -1,175 +1,136 @@
-# AugmentIQ
+<p align="center">
+  <picture>
+    <img alt="AugmentiQ" src="./docs/public/assets/augmentiq-banner.svg" width="100%">
+  </picture>
+</p>
 
-> **Portable governance for AI agent memory.**
-> A free, MIT-licensed Agent Skill that captures, classifies, retains, audits, and migrates your agent's context. Works with 5 backends. The recommended backend for serious / enterprise / local-first use is **AugmentIQ+** (a Docker-based MCP server). The other 4 backends (Obsidian, mem0, ReMe, Hermes native) are for users with existing infrastructure.
+<h1 align="center">AugmentiQ</h1>
 
-```bash
-# Quickstart on Hermes
-cp -r AugmentIQ/ ~/.hermes/skills/augmentiq/
-hermes skills reload
-/augmentiq help
-```
+<p align="center">
+  <b>Persistent memory for AI agents, living in your Obsidian vault.</b><br>
+  Local. Classified. Auditable. Yours.
+</p>
 
-**30 seconds to first value.** Built on the open Agent Skills standard — works on Hermes, OpenClaw, Claude Code, Codex, Cursor, and 30+ more spec-compliant hosts.
+<p align="center">
+  <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-0b5fff.svg"></a>
+  <img alt="Version 0.1.0" src="https://img.shields.io/badge/version-0.1.0-7c3aed.svg">
+  <img alt="Local only" src="https://img.shields.io/badge/data-never%20leaves%20host-0f9d58.svg">
+  <a href="https://agentskills.io"><img alt="Agent Skills" src="https://img.shields.io/badge/Agent%20Skills-compliant-0d1117.svg"></a>
+</p>
 
-## What it does
-
-- **Captures** context from your existing sources (Obsidian, mem0, ReMe, Hermes native, or AugmentIQ+) into a single classified, retained, auditable memory layer.
-- **Classifies** every record as `public` / `internal` / `confidential` / `restricted`, with PII auto-upgrade.
-- **Retains** per regulation (GDPR, SOC2, HIPAA, ISO 27001 — packs ship in v0.1.1).
-- **Audits** every state change to a tamper-evident timeline you can export.
-- **Migrates** between backends in one command with a lossiness report.
-
-## The 5 Immutable Principles (the constitution)
-
-These never change. Every flow, every command, every reference derives from them.
-
-1. **We don't own your memory.** Every state-changing action needs explicit per-action confirmation.
-2. **We don't own your agent.** The host agent retains full authority. The Skill suggests, you decide.
-3. **Your data is yours, forever.** Every action is reversible. Migration is bidirectional. No lock-in.
-4. **Confirm before destructive.** Delete, redact, expire, migrate, destroy — all need in-session confirmation.
-5. **Audit everything.** Every state change is logged, queryable, exportable. Append-only, content-hashed.
-
-The full per-principle spec is in [`references/PRINCIPLES.md`](./references/PRINCIPLES.md).
-
-## The 5 supported backends
-
-| Backend | When to use |
-|---------|-------------|
-| **AugmentIQ+** (Custom, via MCP) | **Recommended for serious / enterprise / local-first use.** Docker-based, 100% local, server-owned tamper-evident audit, hybrid search. |
-| **Obsidian** | You already have a vault. The Skill adds the governance layer. |
-| **mem0** | You already use mem0. The Skill adds classification, retention, audit, DSR. |
-| **ReMe** | File-based with Git-style versioning. The Skill adds the rules. |
-| **Hermes native** | You live in `MEMORY.md` + `USER.md`. The Skill adds classification and audit. |
-
-**If you don't have a backend yet, use AugmentIQ+.** It's the recommended path for serious use.
-
-## Install
-
-### Prerequisites
-
-- An Agent-Skills-compliant host agent: **Hermes** (primary), **OpenClaw** (secondary), **Claude Desktop**, Claude Code, Codex, Cursor, or any of 30+ spec-compliant hosts.
-- A memory backend (5 supported, see above).
-- For AugmentIQ+ (recommended for serious use): **Docker** must be available on the host.
-
-### Quick start
-
-```bash
-# 1. Install the Skill on your host agent
-cp -r AugmentIQ/ ~/.hermes/skills/augmentiq/
-hermes skills reload
-
-# 2. If using AugmentIQ+ (recommended for serious use):
-docker build -t augmentiq-engine /path/to/augmentiq-plus
-
-# 3. Run the questionnaire
-/augmentiq init
-
-# 4. Capture your first record
-/augmentiq save "This is a test record" --tags=test,first
-
-# 5. Search
-/augmentiq recall "test"
-
-# 6. See the audit trail
-/augmentiq timeline
-```
-
-### Claude Desktop
-
-1. Upload the skill: Settings → Customize → Skills → **+** → upload a ZIP of this repo (`SKILL.md` at the ZIP root).
-2. Optional — AugmentIQ+ backend: point `claude_desktop_config.json` at the launch script:
-   `{"mcpServers": {"augmentiq": {"command": "/path/to/AugmentIQ/assets/mcp-launch/claude_desktop.sh"}}}`
-3. Ask Claude: "run augmentiq help"
-
-Full install walkthrough is in [`INSTALL_TEST.md`](./INSTALL_TEST.md).
-
-## The 26 commands
-
-Grouped by intent. Full per-command spec is in [`references/commands.md`](./references/commands.md).
-
-- **Onboarding** (4): `init`, `status`, `reconfigure`, `destroy`
-- **Capture** (3): `snapshot`, `save`, `tag`
-- **Query** (3): `recall`, `timeline`, `who-knows`
-- **Compliance** (5): `audit`, `retention`, `redact`, `dsr`, `role`
-- **Migration** (3): `migrate`, `export`, `import`
-- **Legacy ingest** (8): `ingest` + 7 sub-commands
-- **Meta** (1): `help`
-
-## The 6 cron cadences
-
-What makes AugmentIQ "run" without you prompting it. All configurable per `unit_type`.
-
-| Cadence | Default | What |
-|---------|---------|------|
-| `daily-snapshot` | 02:00 daily | Capture state of designated sources |
-| `weekly-review` | Sunday 04:00 | Surface changes, stale items |
-| `monthly-retention` | 1st of month 03:00 | Enforce retention policies |
-| `quarterly-audit` | Last day of quarter 04:00 | Generate the full audit report |
-| `ingest-batch` | 02:00 nightly (if pending) | Pull next batch of legacy data |
-| `on-event` | triggered by commit/merge/decision/incident/etc. | Capture the event |
-
-## The 4 scale tiers
-
-| Tier | Questions | Default scope | Default compliance |
-|------|-----------|---------------|-------------------|
-| **individual** | 5 | self | none |
-| **team** | 11 | team | opt-in |
-| **department** | 17 | department | 1 pack by default |
-| **organisation** | 22 | organisation | 1-4 packs |
-
-## When NOT to use this Skill
-
-This Skill is the wrong tool if:
-
-- You want a **dashboard**. AugmentIQ is a Skill, not a UI.
-- You want a **SaaS**. The Skill runs on your machine against your backend. There is no hosted version in v0.1.
-- You want **dreaming / memory synthesis**. The Skill does not promise dreaming in v0.1.
-- You want a **memory backend**. The Skill is the governance layer, not the storage. Pick a backend first.
-- You have **no source data to capture**. The Skill manages data you already have.
-
-## Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Host Agent    │    │  AugmentIQ v0.1 │    │   Memory        │
-│  (Hermes,       │◀──▶│     Skill       │◀──▶│   Backend       │
-│   OpenClaw,     │    │                 │    │                 │
-│   Claude Code,  │    │  26 commands    │    │  (5 supported,  │
-│   Codex, ...)   │    │  5 Principles   │    │   AugmentIQ+    │
-│                 │    │  Questionnaire  │    │   recommended)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-- **The Skill** = routing + governance. Formats payloads, enforces the 5 Principles, handles confirmations.
-- **The backend** = storage + compute. Holds the records, computes embeddings, runs search.
-- **The host agent** = the executor. Loads the Skill, calls the commands, runs the flows.
-
-The boundary is the 5 MCP tool signatures (for AugmentIQ+) or the per-backend adapter contract (for the 4 secondary backends). See [`references/mcp-integration.md`](./references/mcp-integration.md) and [`references/backends/custom.md`](./references/backends/custom.md).
-
-## Pricing
-
-- **The Skill** — free, MIT, forever.
-- **Compliance packs** (GDPR, SOC2, HIPAA, ISO 27001) — paid, ship in v0.1.1.
-- **Legacy migration engagement** — paid service. Starter $15-25k, Standard $25-45k, Enterprise $45-90k, Complex $90k+.
-- **Consultant certification program** — paid. See the docs for details.
-
-## License
-
-MIT. See [`LICENSE`](./LICENSE).
-
-## Brand context
-
-AugmentIQ is the portable governance skill. The umbrella brand is **Agentic Augmentation**, by **Upsurge** (Advantage Technologies INC). The whitepaper is the thought-leadership piece; the Skill is the technical product. They ship together.
-
-## See also
-
-- [`INSTALL_TEST.md`](./INSTALL_TEST.md) — end-to-end install + smoke test
-- [`references/PRINCIPLES.md`](./references/PRINCIPLES.md) — the 5 Immutable Principles (full spec)
-- [`references/commands.md`](./references/commands.md) — all 26 commands
-- [`SKILL.md`](./SKILL.md) — the Skill body the host agent loads
-- [Agent Skills spec](https://agentskills.io) — the open standard this Skill implements
+<p align="center">
+  <b>Use with</b><br>
+  <img alt="OpenClaw" src="./docs/public/assets/logos/openclaw.svg" height="34">&nbsp;&nbsp;
+  <img alt="Hermes" src="./docs/public/assets/logos/hermes.svg" height="34">&nbsp;&nbsp;
+  <img alt="Claude Desktop" src="./docs/public/assets/logos/claude.svg" height="34">&nbsp;&nbsp;
+  <img alt="Claude Code" src="./docs/public/assets/logos/claude-code.svg" height="34">&nbsp;&nbsp;
+  <img alt="Codex" src="./docs/public/assets/logos/codex.svg" height="34">&nbsp;&nbsp;
+  <img alt="Cursor" src="./docs/public/assets/logos/cursor.svg" height="34">
+</p>
 
 ---
 
-**© 2026 Advantage Technologies INC (Upsurge). The AugmentIQ Skill is MIT-licensed. The 4 compliance packs are paid. The migration engagement and the consultant certification are paid services.**
+Your agent starts every session from zero. AugmentiQ gives it a memory that survives the session, stores itself as plain Markdown you can read, and keeps a tamper-evident audit trail of everything it learned.
+
+It runs entirely on your machine. The server binds `127.0.0.1`, your vault is the database, and no data leaves the host.
+
+**Free for personal use.** Commercial and enterprise deployments: [see below](#license).
+
+## Install
+
+Three steps, no Docker, no daemon.
+
+| Step | What | How |
+|---|---|---|
+| **1** | The memory | Obsidian → Community plugins → **AugmentiQ** → Enable → copy the token from the ribbon |
+| **2** | The tools | `openclaw plugins install clawhub:upsurge/augmentiq`, then paste the token |
+| **3** | The judgement | `openclaw skills install augmentiq` |
+
+Per-host guides for Hermes, Claude Desktop, Claude Code, Codex and Cursor: [`docs/public/install/`](./docs/public/install/).
+
+## The problem it actually solves
+
+Ask an agent to research a market and you get a paragraph. The reason is not the model — it is that the agent has nowhere to put what it finds. Nothing accumulates, so every investigation starts cold, and cold investigations stay shallow because depth costs tokens.
+
+Give the same agent a memory and the work changes shape:
+
+| Without AugmentiQ | With AugmentiQ |
+|---|---|
+| One prompt, one answer | A swarm of agents, each appending findings |
+| Findings die with the session | Findings land in the vault as structured Markdown |
+| You re-explain context every time | The agent recalls it and resumes where you stopped |
+| Output is a wall of chat text | Output is a reviewable document tree you can diff |
+| You cannot tell what it knew, or when | Every write is timestamped and hash-chained |
+
+That is the product: not chat history, but a working memory that compounds.
+
+## What you get
+
+- **A real memory store.** Every memory is a Context Record — stable id, event timestamp separate from stored timestamp, scope, source, tags, classification. It lives in `.augmentiq/memories.jsonl` inside your vault.
+- **A tamper-evident audit trail.** Every state change appends a SHA-256 hash-chained entry to `.augmentiq/audit.log`. Verification is served, not promised.
+- **Memory that becomes understanding.** Observations accumulate; repetition becomes conclusions; stable conclusions become the profile. Weekly consolidation turns drift into structure.
+- **Ten tools, two surfaces.** Five contract tools for governance flows, five consumer tools for the recall → reason → respond → record loop.
+- **Your vault as the interface.** Readable, diffable, backupable. No proprietary store and no export step.
+- **A skill that carries judgement.** When to remember, when to ask, when to refuse — 26 subcommands, 10 flows, five immutable principles.
+- **Read-only mode that holds.** Enforced at the server, so a cautious install genuinely cannot write.
+
+## How a turn runs
+
+```
+recall  →  reason  →  respond  →  record  →  consolidate
+```
+
+Only the last two touch storage, and consolidation is non-destructive: it surfaces duplicates, contradictions and stale records for you to decide on.
+
+Full mechanism — how a vault becomes structured long-term memory, how the layers build, what the audit chain is actually for: **[How memory compounds](./docs/public/HOW-MEMORY-COMPOUNDS.md)**.
+
+## Configuration
+
+| Setting | What it does | Default |
+|---|---|---|
+| `port` | Port for the embedded MCP server | `3710` |
+| `token` | Bearer token agents authenticate with | generated on first enable |
+| `readOnly` | Rejects every write with `-32002` | `false` |
+| `serverEnabled` | Run the server while Obsidian is open | `true` |
+
+Memory data lives in `.augmentiq/` at the vault root. Plugin settings live in the plugin's `data.json`, excluded from git by the default vault ignore rules.
+
+## Requirements
+
+- **Obsidian desktop** — the plugin is `isDesktopOnly`; mobile is not supported in v0.1.
+- **Obsidian must be running** — the server lives inside the app.
+- **No Docker** — the embedded server replaces the container for this backend.
+
+## Reference
+
+| Document | What's inside |
+|---|---|
+| [How memory compounds](./docs/public/HOW-MEMORY-COMPOUNDS.md) | The four layers, how observations become conclusions, why the audit chain matters |
+| [Architecture](./docs/public/ARCHITECTURE.md) | How skill, bridge and vault server fit together |
+| [Security](./docs/public/SECURITY.md) | Threat model, token handling, what local-only buys you |
+| [Install guides](./docs/public/install/) | Per host, tested |
+| [SKILL.md](./SKILL.md) | The agent-facing playbook |
+| [record-schema.md](./references/record-schema.md) | Canonical schemas, tool signatures, error codes |
+| [Technical manual deck](./docs/public/deck/) | HTML and PPTX |
+
+## Troubleshooting
+
+**Tools return "not configured".** No token in the host config. It must be a literal string — SecretRefs do not resolve for plugin config objects.
+
+**Tools return 401.** The token was regenerated in Obsidian. Copy the new one.
+
+**"Server unreachable".** Obsidian is closed or the plugin is disabled. Check the status bar reads `AugmentiQ:3710`.
+
+**Port already in use.** Change the port in plugin settings and update the host's `baseUrl`.
+
+## Status
+
+v0.1. The vault plugin runs against a real vault: memory round-trip, redaction, audit-chain verification and the full tool surface are tested end to end. The OpenClaw bridge and the skill are installed and loaded. Not yet proven: sustained multi-day use, clean-machine installation, public distribution.
+
+## License
+
+The AugmentiQ plugin and skill are **MIT** — free for personal and commercial use. See [`LICENSE`](./LICENSE).
+
+**Commercial and enterprise deployments** — multi-user org memory, compliance packs (GDPR, SOC 2, HIPAA, ISO 27001), the AugmentIQ+ Docker backend, legacy-data ingest, or a supported rollout — are handled directly. Write to **customdev@upsurge.ae**.
+
+There is no paid tier hiding behind the free one. The plugin stays free, MIT, and fully functional. We get paid when an organisation needs governance guarantees, scale, or someone accountable for the deployment.

@@ -1,427 +1,547 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>AugmentiQ — Technical Manual</title>
+<title>consulting deck</title>
+
 <style>
-  :root{
-    --ink:#0d1117; --ink-soft:#4a5462; --line:#dfe4ea;
-    --paper:#ffffff; --paper-2:#f6f8fa;
-    --accent:#0b5fff; --accent-soft:#e8efff;
-    --vault:#7c3aed; --vault-soft:#f2ecff;
-    --bridge:#0f9d58; --bridge-soft:#e6f7ee;
-    --warn:#b45309; --warn-soft:#fef3c7;
-    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
-    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#e9edf2;font-family:var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased}
-  .slide{
-    width:1920px;height:1080px;background:var(--paper);position:relative;
-    margin:0 auto 40px;padding:96px 110px;display:flex;flex-direction:column;
-    page-break-after:always;overflow:hidden;
-  }
-  .slide::after{
-    content:attr(data-n);position:absolute;right:110px;bottom:54px;
-    font-family:var(--mono);font-size:22px;color:#aab3c0;
-  }
-  .kicker{
-    font-family:var(--mono);font-size:22px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--accent);margin-bottom:26px;
-  }
-  h1{font-size:88px;line-height:1.03;letter-spacing:-.03em;font-weight:800;margin-bottom:28px}
-  h2{font-size:60px;line-height:1.08;letter-spacing:-.025em;font-weight:750;margin-bottom:34px}
-  h3{font-size:34px;font-weight:700;letter-spacing:-.01em;margin-bottom:14px}
-  p{font-size:27px;line-height:1.5;color:var(--ink-soft);max-width:1450px}
-  .lede{font-size:33px;color:var(--ink-soft);line-height:1.45}
-  .sub{font-size:24px;color:var(--ink-soft)}
-  strong{color:var(--ink);font-weight:700}
-  .rule{height:2px;background:var(--line);margin:44px 0}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:48px}
-  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
-  .card{
-    border:2px solid var(--line);border-radius:18px;padding:34px 32px;background:var(--paper);
-    display:flex;flex-direction:column;
-  }
-  .card .tag{
-    font-family:var(--mono);font-size:19px;letter-spacing:.1em;text-transform:uppercase;
-    margin-bottom:14px;font-weight:600;
-  }
-  .card p{font-size:23px;line-height:1.45}
-  .badge{
-    display:inline-block;font-family:var(--mono);font-size:19px;padding:6px 14px;border-radius:999px;
-    border:2px solid var(--line);margin:0 10px 10px 0;color:var(--ink-soft);
-  }
-  .num{font-family:var(--mono);font-size:64px;font-weight:700;line-height:1;color:var(--accent);margin-bottom:14px}
-  table{width:100%;border-collapse:collapse;font-size:24px}
-  th{
-    text-align:left;font-family:var(--mono);font-size:19px;letter-spacing:.09em;text-transform:uppercase;
-    color:var(--ink-soft);border-bottom:2px solid var(--line);padding:0 18px 16px 0;font-weight:600;
-  }
-  td{padding:20px 18px 20px 0;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4}
-  td:first-child{font-weight:650;color:var(--ink)}
-  code,.mono{font-family:var(--mono);font-size:.92em;background:var(--paper-2);padding:3px 8px;border-radius:6px}
-  pre{
-    font-family:var(--mono);font-size:22px;line-height:1.6;background:var(--ink);color:#e6edf3;
-    padding:34px 38px;border-radius:16px;overflow:hidden;
-  }
-  pre .c{color:#8b98a5}
-  pre .g{color:#7ee787}
-  pre .b{color:#79c0ff}
-  .flow{display:flex;align-items:stretch;gap:0;margin:18px 0}
-  .node{
-    flex:1;border:3px solid var(--line);border-radius:16px;padding:26px 24px;background:var(--paper);
-  }
-  .node .t{font-size:26px;font-weight:750;margin-bottom:8px}
-  .node .d{font-size:20px;color:var(--ink-soft);line-height:1.4}
-  .arrow{
-    display:flex;align-items:center;justify-content:center;width:74px;flex:0 0 74px;
-    font-size:34px;color:#aab3c0;
-  }
-  .vault{border-color:var(--vault);background:var(--vault-soft)}
-  .vault .t{color:var(--vault)}
-  .bridge{border-color:var(--bridge);background:var(--bridge-soft)}
-  .bridge .t{color:var(--bridge)}
-  .host{border-color:var(--accent);background:var(--accent-soft)}
-  .host .t{color:var(--accent)}
-  .note{
-    border-left:6px solid var(--warn);background:var(--warn-soft);padding:26px 30px;border-radius:0 12px 12px 0;
-    font-size:23px;line-height:1.45;color:#6b4a10;
-  }
-  .note b{color:#4a3208}
-  .foot{margin-top:auto;font-size:21px;color:#8b98a5;font-family:var(--mono)}
-  ul{list-style:none}
-  li{font-size:25px;line-height:1.55;color:var(--ink-soft);padding-left:34px;position:relative;margin-bottom:14px}
-  li::before{content:"→";position:absolute;left:0;color:var(--accent);font-weight:700}
-  .two-col{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:start}
-  .layer{display:flex;gap:22px;align-items:flex-start;margin-bottom:26px}
-  .layer .idx{
-    font-family:var(--mono);font-size:20px;font-weight:700;width:52px;height:52px;border-radius:12px;
-    display:flex;align-items:center;justify-content:center;flex:0 0 52px;
-  }
-  @media print{
-    body{background:#fff}
-    .slide{margin:0;box-shadow:none}
-  }
+:root {
+  --color-page: #F7F5F2;
+  --color-card: #FFFFFF;
+  --color-ink: #1A1A1A;
+  --color-signal: #C8102E;
+  --color-signal-subtle: #8C0E27;
+  --color-muted: #6B6B6B;
+  --color-rule: #D4D0CB;
+  --font-header: 'Source Serif Pro', 'Tiempos Headline', Georgia, serif;
+  --font-body: Inter, 'Söhne', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono', 'Söhne Mono', ui-monospace, monospace;
+  --font-weight-header: 600;
+  --font-weight-body: 400;
+  --font-weight-data: 500;
+  --size-h1: 64px;
+  --size-h2: 44px;
+  --size-h3: 32px;
+  --size-h4: 24px;
+  --size-body-1: 18px;
+  --size-body-2: 16px;
+  --size-body-3: 14px;
+  --size-body-4: 12px;
+  --space-unit: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --radius-card: 2px;
+  --radius-button: 2px;
+  --radius-input: 2px;
+  --elevation-card: 0 1px 0 rgba(0,0,0,0.06);
+  --page-width: 1920px;
+  --page-height: 1080px;
+  --page-safe: 96px;
+}
+
+.slide {
+  width: var(--page-width);
+  height: var(--page-height);
+  background: var(--color-page);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-body);
+  font-size: var(--size-body-2);
+  padding: var(--page-safe);
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+.slide h1, .slide h2, .slide h3, .slide h4 {
+  font-family: var(--font-header);
+  font-weight: var(--font-weight-header);
+  margin: 0;
+}
+.slide h1 { font-size: var(--size-h1); }
+.slide h2 { font-size: var(--size-h2); }
+.slide h3 { font-size: var(--size-h3); }
+.slide h4 { font-size: var(--size-h4); }
+.slide-flow {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.slide-flow .flow-grow { flex: 1; min-height: 0; }
+.slide-flow .flow-grow-evenly {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
+}
+.slide-flow .flow-stretch-grid {
+  flex: 1;
+  display: grid;
+  min-height: 0;
+}
+/* Bounded-island layout — STRUCTURE ONLY, carries no look (no color, border,
+   shadow, gap, padding, type). Pin a header and footer band, let the middle
+   stage fill the height between them, and make repeated cards grow to fill the
+   stage. This is the anti-float contract: content occupies the whole slide
+   instead of clustering under the headline with an empty lower third. Look
+   (gap, padding, radius, color) lives in chrome.css. */
+.slide-flow .flow-head,
+.slide-flow .flow-foot { flex: none; min-height: 0; }
+.slide-flow .flow-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* sparse content: center it in the stage instead of pinning it to the top */
+.slide-flow .flow-stage.flow-center { justify-content: center; }
+/* a grid stage that fills the height AND stretches its rows to consume it */
+.slide-flow .flow-grid-fill {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  align-content: stretch;
+}
+/* a card/cell that grows to fill its grid or flex track top-to-bottom */
+.flow-fill { height: 100%; min-height: 0; box-sizing: border-box; }
+/* a vertical list/ledger that fills the stage as EQUAL-height tracks. Use this
+   instead of justify-content:space-between on natural-height rows — that spreads
+   the rows but leaves a void under each item (only the last lands flush). Here
+   every row gets an equal track and its content centers inside it, so dividers
+   are evenly spaced and nothing clings to the top of its band. */
+.slide-flow .flow-rows { flex: 1; min-height: 0; display: grid; grid-auto-rows: 1fr; }
+.flow-row { display: flex; align-items: center; min-height: 0; box-sizing: border-box; }
+/* the body inside a filling card: a full-height column that can distribute its
+   own rows (center a sparse card, or space-between a header+content card) */
+.flow-fill-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+.flow-fill-body.flow-center { justify-content: center; }
+.flow-fill-body.flow-between { justify-content: space-between; }
+.dir-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.dir-list { display: contents; }
+
+/* consulting — bespoke chrome. Pitch-book authority: dense rhythm, serif
+   headlines cut tight, one red signal used like a highlighter, engineered
+   tables. Everything earns its ink. */
+
+.slide h1, .slide h2, .slide h3, .slide h4 { letter-spacing: -0.015em; }
+.slide h1 { line-height: 1.04; }
+.slide h2 { line-height: 1.08; }
+.slide h3 { line-height: 1.12; }
+.slide h4 { line-height: 1.16; }
+
+/* section tag: compact, ink-dark, data font — reads as document apparatus */
+.slide .eyebrow {
+  font-family: var(--font-data);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-ink);
+}
+
+/* the classic consulting footnote line */
+.slide .source {
+  position: absolute;
+  bottom: 28px;
+  left: var(--page-safe);
+  right: var(--page-safe);
+  font-size: 14px;
+  color: var(--color-muted);
+  border-top: 1px solid var(--color-rule);
+  padding-top: 8px;
+}
+
+.slide .signal-bar {
+  height: 4px;
+  background: var(--color-signal);
+}
+
+/* Graphic system: the ledger. A red margin rule down the document moments
+   (cover, dividers, closing), an Oxford double rule under every exhibit
+   headline, faint paper grain on the bookends, a giant cropped serif numeral
+   on dividers. Drawn document apparatus, never decoration. */
+
+/* red margin rule, the ledger-paper artifact */
+.cx-margin::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 56px;
+  width: 2px;
+  background: var(--color-signal);
+}
+
+/* Oxford rule: the thick-thin pair from financial documents, set under
+   exhibit headlines (an element, so templates place it deliberately) */
+.cx-oxford {
+  position: relative;
+  height: 8px;
+  border-top: 3px solid var(--color-ink);
+  flex: none;
+}
+.cx-oxford::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 7px;
+  border-top: 1px solid var(--color-ink);
+}
+
+/* faint paper grain for the bookend slides */
+.cx-paper {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.06'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* dense working rhythm */
+.slide-flow {
+  gap: 24px;
+  padding-bottom: 64px;
+}
+
+/* engineered exhibit table: heavy ink head, compact rows, narrow label col */
+.dir-table {
+  font-size: 17px;
+}
+.dir-table thead th {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-ink);
+  text-align: left;
+  padding: 10px 18px 10px 0;
+  border-bottom: 2px solid var(--color-ink);
+}
+.dir-table tbody th {
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 18px 12px 0;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+  width: 28%;
+}
+.dir-table tbody td {
+  padding: 12px 18px 12px 0;
+  border-bottom: 1px solid var(--color-rule);
+  vertical-align: top;
+  font-variant-numeric: tabular-nums;
+}
+.dir-table tbody tr:last-child th,
+.dir-table tbody tr:last-child td { border-bottom: none; }
+
+/* ledger rows: hairline between rows, none after the last */
+.slide-content-3col .cx-ledger-row { border-bottom: 1px solid var(--color-rule); }
+.slide-content-3col .cx-ledger-row:last-child { border-bottom: none; }
+
+/* process rail: one drawn vertical line, a square node per step on it */
+.cx-rail-row { position: relative; }
+.cx-rail-row::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-ink);
+}
+.cx-rail-row:first-child::before { top: 50%; }
+.cx-rail-row:last-child::before { bottom: 50%; }
+.cx-rail-row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin-top: -5px;
+  width: 11px;
+  height: 11px;
+  background: var(--color-signal);
+}
+
+/* the comparison exhibit fills its stage like a ledger: equal-height rows */
+.slide-comparison-table .dir-table { height: 100%; }
+
+body { margin: 0; background: #1a1a1a; padding: 40px; }
+.slide { margin: 0 auto 40px; box-shadow: 0 8px 40px rgba(0,0,0,0.4); }
+.slide-bleed { position: relative; padding: 0 !important; overflow: hidden; }
+.slide-bleed > .bleed-content { position: relative; z-index: 1; padding: var(--page-safe); height: 100%; box-sizing: border-box; }
 </style>
 </head>
 <body>
-
-<!-- 1. TITLE -->
-<section class="slide" data-n="01">
-  <div class="kicker">Technical Manual · v0.1 · October 2026</div>
-  <h1>AugmentiQ</h1>
-  <p class="lede" style="max-width:1250px">Persistent memory for AI agents,<br>living in your Obsidian vault.<br>Local. Auditable. Yours.</p>
-  <div class="rule"></div>
-  <div class="grid3" style="margin-top:8px">
-    <div>
-      <div class="num">3</div>
-      <p><strong>shipped artifacts</strong><br>vault plugin · host bridge · skill</p>
+<section data-slide-type="cover" class="slide slide-cover cx-margin cx-paper" data-density="editorial">
+  <div class="slide-flow" style="padding-bottom: 0;">
+    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 28px;">
+      <div class="eyebrow">Upsurge · October 2026</div>
+      <h1 style="max-width: 1500px;">AugmentiQ</h1>
+      <h3 style="color: var(--color-muted); font-family: var(--font-body); font-weight: 400; max-width: 1300px; margin-top: 8px;">Persistent memory for AI agents, living in your Obsidian vault. Local, auditable, yours.</h3>
     </div>
-    <div>
-      <div class="num">10</div>
-      <p><strong>MCP tools</strong><br>5 governance · 5 consumer</p>
-    </div>
-    <div>
-      <div class="num">7</div>
-      <p><strong>supported hosts</strong><br>Hermes · OpenClaw · Claude · Codex · Cursor</p>
-    </div>
-  </div>
-  <div class="foot">Upsurge · upsurge.ai/augmentiq</div>
-</section>
-
-<!-- 2. THE CORRECTION -->
-<section class="slide" data-n="02">
-  <div class="kicker">Start here</div>
-  <h2>Three artifacts, three layers —<br>and one of them is the product</h2>
-  <p style="margin-bottom:44px">It is tempting to describe AugmentiQ as “a skill, an OpenClaw plugin, and an Obsidian plugin.” That is accurate but misleading. Only <strong>one</strong> of the three is the product. The other two exist to connect it to a host.</p>
-  <div class="flow">
-    <div class="node host">
-      <div class="t">Skill</div>
-      <div class="d">Governance playbook<br><span class="mono">SKILL.md</span> + 22 refs<br>host-agnostic</div>
-    </div>
-    <div class="arrow">→</div>
-    <div class="node bridge">
-      <div class="t">OpenClaw plugin</div>
-      <div class="d">Native tool bridge<br>6 tools → HTTP<br>convenience layer</div>
-    </div>
-    <div class="arrow">→</div>
-    <div class="node vault">
-      <div class="t">Obsidian plugin</div>
-      <div class="d"><strong>The product.</strong><br>Server · store · audit<br>10 tools, 1 install</div>
-    </div>
-  </div>
-  <div class="rule"></div>
-  <p class="sub">Remove the Obsidian plugin and AugmentiQ has nowhere to store a memory. Remove either adapter and it still works — just less conveniently. That is the dependency arrow, and everything else follows from it.</p>
-</section>
-
-<!-- 3. ARCHITECTURE -->
-<section class="slide" data-n="03">
-  <div class="kicker">Architecture</div>
-  <h2>The whole system on one page</h2>
-  <div class="flow" style="margin-bottom:34px">
-    <div class="node host" style="flex:1.15">
-      <div class="t">Host agent</div>
-      <div class="d">Hermes · OpenClaw · Claude Desktop<br>Claude Code · Codex · Cursor · nanobot</div>
-    </div>
-    <div class="arrow">→</div>
-    <div class="node host" style="flex:1">
-      <div class="t">Skill + bridge</div>
-      <div class="d">Formats records · enforces 5 principles<br>routes tool calls</div>
-    </div>
-    <div class="arrow">→</div>
-    <div class="node vault" style="flex:1.15">
-      <div class="t">MCP server</div>
-      <div class="d"><span class="mono">127.0.0.1:3710</span><br>bearer token · stateless HTTP</div>
-    </div>
-    <div class="arrow">→</div>
-    <div class="node vault" style="flex:1.15">
-      <div class="t">Vault store</div>
-      <div class="d"><span class="mono">.augmentiq/</span><br>records + hash-chained audit</div>
-    </div>
-  </div>
-  <table>
-    <tr><th style="width:26%">Boundary</th><th>What crosses it</th></tr>
-    <tr><td>Host → Skill</td><td>User intent: <code>/augmentiq save …</code>, or natural language on hosts without slash commands</td></tr>
-    <tr><td>Skill → Server</td><td>JSON-RPC 2.0 <code>tools/call</code> over HTTP, one Bearer token, loopback only</td></tr>
-    <tr><td>Server → Store</td><td>Append to <code>memories.jsonl</code>; append hash-chained entry to <code>audit.log</code></td></tr>
-  </table>
-  <p class="sub" style="margin-top:30px">Every arrow is local. There is no cloud call anywhere in this diagram — by design, not by configuration.</p>
-</section>
-
-<!-- 4. OBSIDIAN PLUGIN -->
-<section class="slide" data-n="04">
-  <div class="kicker">Component 1 — the product</div>
-  <h2>Obsidian plugin: the server and the memory</h2>
-  <div class="two-col">
-    <div>
-      <p style="margin-bottom:32px">One install. No Docker, no separate process, no daemon. Enabling the plugin starts an MCP server inside Obsidian and creates the memory store in the vault.</p>
-      <ul>
-        <li>Embedded streamable-HTTP MCP server on <code>127.0.0.1:3710</code></li>
-        <li>Bearer token generated on first enable; copy from ribbon or settings</li>
-        <li>Read-only mode enforced server-side, not by convention</li>
-        <li>Vault deletes go to system trash — never hard-deleted</li>
-        <li>Records stored as Context Records; audit log is SHA-256 chained</li>
-      </ul>
-    </div>
-    <div>
-      <table>
-        <tr><th>Group</th><th>Tools</th></tr>
-        <tr><td>Contract</td><td><code>mcp_add_memory</code><br><code>mcp_search_memory</code><br><code>mcp_update_memory</code><br><code>mcp_delete_memory</code><br><code>mcp_get_audit_entry</code></td></tr>
-        <tr><td>Consumer</td><td><code>memory</code> · <code>vault</code><br><code>edit</code> · <code>graph</code> · <code>system</code></td></tr>
-      </table>
-      <p class="sub" style="margin-top:22px">The contract group is the stable API the skill depends on. The consumer group is the richer experience for interactive use.</p>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 16px; font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">
+      <span>Prepared for Upsurge</span>
+      <span>Confidential · October 2026</span>
     </div>
   </div>
 </section>
 
-<!-- 5. MEMORY MODEL -->
-<section class="slide" data-n="05">
-  <div class="kicker">Component 1 — data model</div>
-  <h2>What a memory actually is</h2>
-  <div class="two-col">
-    <div>
-      <pre><span class="c">// .augmentiq/memories.jsonl — one record per line</span>
-{
-  <span class="b">"schema_version"</span>: "1.0",
-  <span class="b">"id"</span>: "augmentiq:9c1f…",
-  <span class="b">"timestamp"</span>: "2026-10-24T14:00:00Z",
-  <span class="b">"scope"</span>: "individual",
-  <span class="b">"source"</span>: "chat:session:2026-10-24",
-  <span class="b">"content"</span>: "User prefers concise answers.",
-  <span class="b">"tags"</span>: ["preference","communication"],
-  <span class="b">"classification"</span>: "internal",
-  <span class="b">"audit_ref"</span>: "augmentiq-tl:4e8b…"
-}</pre>
-    </div>
-    <div>
-      <h3>Bi-temporal by design</h3>
-      <p style="margin-bottom:28px">Two timestamps, never conflated: <code>timestamp</code> is when the fact happened; <code>recorded_at</code> is when it was stored. Legacy ingest keeps the original event time.</p>
-      <h3>Classified, not just stored</h3>
-      <p style="margin-bottom:28px">Every record carries <code>public</code> / <code>internal</code> / <code>confidential</code> / <code>restricted</code>. A PII pattern match forces at least <em>confidential</em>.</p>
-      <h3>Audit is not optional</h3>
-      <p>Each write appends a timeline entry: <code>audit_hash = sha256(entry)</code>, chained onto <code>previous_hash</code>. That is what makes the trail tamper-evident rather than merely present.</p>
+<section data-slide-type="executive-summary" class="slide slide-exec-summary">
+  <div class="slide-flow">
+    <div class="eyebrow">Executive summary</div>
+    <h2 style="max-width: 1550px;">One product, two adapters — and the hierarchy matters</h2>
+    <div class="cx-oxford"></div>
+    <div class="flow-grow" style="display:flex; flex-direction:column; justify-content:space-between; max-width: 1500px; padding: 24px 0;">
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">01</span><div style="font-size: 24px; line-height: 1.5;">The Obsidian plugin is the product: it embeds the MCP server, owns the memory store, and writes the hash-chained audit log. Remove it and AugmentiQ has nowhere to store a memory.</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">02</span><div style="font-size: 24px; line-height: 1.5;">The OpenClaw plugin is an adapter: six native tools proxying loopback HTTP to the vault server. It adds convenience, not capability.</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">03</span><div style="font-size: 24px; line-height: 1.5;">The skill is a playbook, not a component: SKILL.md plus 22 references, running on seven hosts and any agentskills.io-compliant agent.</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">04</span><div style="font-size: 24px; line-height: 1.5;">Three artifacts ship today. The first has passed live verification on a real vault; the other two are installed and loaded.</div></div>
+      <div style="display:flex; gap:32px; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 20px;"><span class="eyebrow" style="color: var(--color-signal); min-width: 32px; font-size: 18px;">05</span><div style="font-size: 24px; line-height: 1.5;">The enterprise backend (AugmentIQ+ over Docker) is deferred. It is not part of v0.1 and should not be sold as such.</div></div>
     </div>
   </div>
+  <div class="source">Source: repository github.com/upsurge911-lgtm/augmentiq · verification 24–25 October 2026</div>
 </section>
 
-<!-- 6. OPENCLAW PLUGIN -->
-<section class="slide" data-n="06">
-  <div class="kicker">Component 2 — the adapter</div>
-  <h2>OpenClaw plugin: native tools, no shelling out</h2>
-  <div class="two-col">
-    <div>
-      <p style="margin-bottom:32px">Without it, an OpenClaw agent reaches AugmentiQ through <code>mcporter</code> or raw HTTP. With it, the same six operations are first-class native tools with typed schemas and friendly errors.</p>
-      <ul>
-        <li>Built with <code>defineToolPlugin</code> from the OpenClaw plugin SDK</li>
-        <li>Proxies each call to the vault server over loopback HTTP</li>
-        <li>Exact contract tool names preserved, so skill flows work unchanged</li>
-        <li>Typed errors: server down, 401, not configured</li>
-      </ul>
-    </div>
-    <div>
-      <pre><span class="c">// plugins.entries.augmentiq.config</span>
-{
-  <span class="b">"token"</span>: "&lt;from Obsidian settings&gt;",
-  <span class="b">"baseUrl"</span>: "http://127.0.0.1:3710/mcp"
-}</pre>
-      <div class="note" style="margin-top:26px">
-        <b>Config accepts a literal string only.</b> SecretRefs resolve for model and provider config, not for plugin <code>config</code> objects. A ref here fails validation with “must be string”.
+<section data-slide-type="content-3col" class="slide slide-content-3col">
+  <div class="slide-flow">
+    <h2 style="max-width: 1700px;">Three layers, each with a different job</h2>
+    <div class="cx-oxford"></div>
+    <div class="flow-rows">
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">Host agent</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">Hermes, OpenClaw, Claude Desktop, Claude Code, Codex, Cursor, nanobot. Holds authority; decides what to store and confirms destructive actions.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">Governance</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">The skill formats Context Records and enforces five immutable principles. The bridge exposes the same operations as native tools.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">Vault server</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">Embedded MCP server on 127.0.0.1:3710. Bearer token, stateless HTTP, 10 tools. Owns the store and the audit chain.</div>
+        </div>
       </div>
     </div>
   </div>
+  <div class="source">Source: SKILL.md · references/mcp-integration.md · plugin/obsidian/src</div>
 </section>
 
-<!-- 7. SKILL -->
-<section class="slide" data-n="07">
-  <div class="kicker">Component 3 — the playbook</div>
-  <h2>Skill: what to do, in what order, with confirmation</h2>
-  <p style="margin-bottom:38px">The skill carries no code. It carries judgement: when to remember, when to ask, in what order to act, and which of 26 subcommands maps to which flow.</p>
-  <div class="grid3">
-    <div class="card">
-      <div class="tag" style="color:var(--vault)">Structure</div>
-      <h3>Portable package</h3>
-      <p><code>SKILL.md</code> under 5k tokens, plus 22 reference docs and assets. Progressive disclosure: only the body loads until a task needs detail.</p>
-    </div>
-    <div class="card">
-      <div class="tag" style="color:var(--vault)">Reach</div>
-      <h3>7 hosts, one package</h3>
-      <p>Hermes, OpenClaw, Claude Desktop, Claude Code, Codex, Cursor, nanobot — and any of 30+ agentskills.io-compliant hosts.</p>
-    </div>
-    <div class="card">
-      <div class="tag" style="color:var(--vault)">Restraint</div>
-      <h3>5 immutable principles</h3>
-      <p>Per-action confirmation · host keeps authority · reversible · confirm before destructive · audit everything.</p>
+<section data-slide-type="process-flow" class="slide slide-process-flow">
+  <div class="slide-flow">
+    <h2>A turn runs five steps, and only two of them write</h2>
+    <div class="cx-oxford"></div>
+    <div class="flow-rows">
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 01</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">Recall</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">Query the store at session start. Lexical scoring in v0.1; embeddings are deferred.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 02</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">Reason</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">Deduce, induce, abduce over what was recalled. Silent — never narrated to the user.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 03</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">Respond</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">Answer informed by memory without announcing that memory was consulted.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 04</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">Record</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">Three to five typed memories per session: observation, conclusion, preference, instruction, summary.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-rail-row">
+        <div style="display:grid; grid-template-columns: 64px 340px 1fr; gap: 48px; width:100%; align-items:center;">
+          <div></div>
+          <div><span class="eyebrow">Step 05</span><div style="font-weight: 600; font-size: 24px; line-height: 1.3; margin-top: 8px;">Consolidate</div></div>
+          <div style="font-size: 19px; line-height: 1.55; color: var(--color-muted); max-width: 1150px;">Weekly and non-destructive: surface duplicates, contradictions, and stale records for a human decision.</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="rule"></div>
-  <p class="sub">The principles are the constitution. Every flow and every command derives from them — which is why the skill can safely run on an agent you do not fully trust with your vault.</p>
+  <div class="source">Source: references/flows.md · engine/store.ts</div>
 </section>
 
-<!-- 8. MEMORY LOOP -->
-<section class="slide" data-n="08">
-  <div class="kicker">Runtime behaviour</div>
-  <h2>How a turn actually runs</h2>
-  <div class="flow" style="margin-bottom:38px">
-    <div class="node host"><div class="t">1 · Recall</div><div class="d">Query the store at session start</div></div>
-    <div class="arrow">→</div>
-    <div class="node host"><div class="t">2 · Reason</div><div class="d">Deduce · induce · abduce</div></div>
-    <div class="arrow">→</div>
-    <div class="node host"><div class="t">3 · Respond</div><div class="d">Inform naturally, don't narrate</div></div>
-    <div class="arrow">→</div>
-    <div class="node vault"><div class="t">4 · Record</div><div class="d">3–5 typed memories</div></div>
-    <div class="arrow">→</div>
-    <div class="node vault"><div class="t">5 · Consolidate</div><div class="d">Weekly: dedupe, resolve, archive</div></div>
-  </div>
-  <div class="grid2">
-    <div>
-      <h3>What gets written</h3>
-      <p>Observation, conclusion, preference, instruction, summary — each with scope, tags, and importance 1–5. Quality over quantity: 3–5 per session is the target, not 30.</p>
+<section data-slide-type="comparison-table" class="slide slide-comparison-table">
+  <div class="slide-flow">
+    <h2>What is proven, and what is not</h2>
+    <div class="cx-oxford"></div>
+    <div class="flow-grow" style="display:flex; flex-direction:column; justify-content:center; padding-top: 16px;">
+      <table data-visual-event="table" class="dir-table"><thead><tr><th class="dir-table-corner"></th><th>Claim</th><th>Status</th></tr></thead><tbody><tr><th scope="row">Vault plugin installed</th><td>Live in a real vault since 24 Oct|Verified
+Handshake and 401 enforcement|Verified
+remember → recall → update → forget, confirmed on disk|Verified
+33 entries, chain recomputed and intact|Verified
+Six tools registered and loaded|Verified
+Across sessions|Not yet
+Second machine, no prior state|Not yet
+Public package|Not yet</td><td></td></tr><tr><th scope="row">Protocol and auth</th><td></td><td></td></tr><tr><th scope="row">Memory round-trip</th><td></td><td></td></tr><tr><th scope="row">Audit integrity</th><td></td><td></td></tr><tr><th scope="row">OpenClaw tools</th><td></td><td></td></tr><tr><th scope="row">Multi-day dogfood</th><td></td><td></td></tr><tr><th scope="row">Clean-machine install</th><td></td><td></td></tr><tr><th scope="row">ClawHub distribution</th><td></td><td></td></tr></tbody></table>
     </div>
-    <div>
-      <h3>What never gets written</h3>
-      <p>Secrets, API keys, passwords, sensitive PII. The skill instructs refusal; classification rules upgrade anything PII-adjacent before it reaches the store.</p>
+  </div>
+  <div class="source">Source: smoke suite 22/22 · audit log 33 entries · plugin runtime inspect</div>
+</section>
+
+<section data-slide-type="data-callout" class="slide slide-data-callout" data-density="editorial">
+  <div class="slide-flow">
+    <div class="eyebrow">The security posture is narrow on purpose</div>
+    <div class="cx-oxford"></div>
+    <div class="flow-grow" style="display:grid; grid-template-columns: 1fr 1fr; gap:96px; align-items:center;">
+      <div>
+        <div style="font-family: var(--font-header); font-weight: 600; font-size: 240px; line-height: 0.9; color: var(--color-signal); letter-spacing: -0.04em;">127.0.0.1</div>
+        <div class="eyebrow" style="margin-top: 24px; font-size: 18px;">the only interface the server binds</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:28px; border-left: 3px solid var(--color-signal); padding-left: 40px;">
+        <div style="font-size: 22px; line-height: 1.5;">Transport is loopback HTTP with a bearer token compared in constant time. There is no remote listener and no cloud relay in the request path.</div>
+        <div style="font-size: 22px; line-height: 1.5;">Data at rest is plain files inside .augmentiq/ in the vault: inspectable, backupable, and owned by the user rather than licensed from a vendor.</div>
+        <div style="font-size: 22px; line-height: 1.5;">Every write appends a SHA-256 chained audit entry. Verification is a served operation, not a claim in a document.</div>
+      </div>
+    </div>
+  </div>
+  <div class="source">Source: references/PRINCIPLES.md · docs/public/SECURITY.md</div>
+</section>
+
+<section data-slide-type="framework-2x2" class="slide slide-framework">
+  <div class="slide-flow">
+    <h2>Where AugmentiQ fits, and where it does not</h2>
+    <div class="cx-oxford"></div>
+    <div class="flow-grow" style="display:grid; grid-template-columns: 56px 1fr 1fr; grid-template-rows: 1fr 1fr 48px; gap: 0;">
+      <div></div>
+      <div style="border-bottom: 1px solid var(--color-rule); border-right: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow" style="color: var(--color-signal);">Governed cloud memory</div>
+        <div style="font-size: 18px; line-height: 1.5;">Audit trail without local custody. Fits teams that accept vendor-held storage for the guarantee of a managed timeline.</div>
+      </div>
+      <div style="border-bottom: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow" style="color: var(--color-signal);">AugmentiQ</div>
+        <div style="font-size: 18px; line-height: 1.5;">Local custody with an audit trail. The product&#39;s home: single-user, single-machine, compliance-adjacent.</div>
+      </div>
+      <div style="writing-mode: vertical-rl; transform: rotate(180deg); display:flex; align-items:center; justify-content:center;"><span class="eyebrow">Wants local custody →</span></div>
+      <div style="border-right: 1px solid var(--color-rule); padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow">Plain vault search</div>
+        <div style="font-size: 18px; line-height: 1.5;">Local custody without audit. Good enough for retrieval; no classification, retention, or tamper evidence.</div>
+      </div>
+      <div style="padding: 28px; display:flex; flex-direction:column; justify-content:center; gap:12px;">
+        <div class="eyebrow">Ephemeral chat memory</div>
+        <div style="font-size: 18px; line-height: 1.5;">Neither custody nor audit. Session-scoped recall; the default behaviour of most agents today.</div>
+      </div>
+      <div></div>
+      <div></div>
+      <div style="display:flex; align-items:center; justify-content:center;"><span class="eyebrow">Needs audit trail →</span></div>
+    </div>
+  </div>
+  <div class="source">Source: docs/internal/research/competitive-landscape.md</div>
+</section>
+
+<section data-slide-type="content-3col" class="slide slide-content-3col">
+  <div class="slide-flow">
+    <h2 style="max-width: 1700px;">Deployment is three steps and under five minutes</h2>
+    <div class="cx-oxford"></div>
+    <div class="flow-rows">
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">Install the vault</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">Obsidian → Community plugins → AugmentiQ → Enable. The plugin starts its server and generates a bearer token. Copy it from the ribbon.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">Install the bridge</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">openclaw plugins install clawhub:upsurge/augmentiq, then paste the token. Config takes a literal string — SecretRefs do not resolve for plugin config.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">Install the skill</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">Copy the package into the host&#39;s skills directory. On OpenClaw that is ~/.openclaw/workspace/skills/augmentiq/. Other hosts use their own path.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="source">Source: docs/public/install/ · README</div>
+</section>
+
+<section data-slide-type="content-2col-image" class="slide slide-content-2col-image">
+  <div class="slide-flow">
+    <div class="flow-grow" style="display:flex; align-items:center;">
+      <div style="display:flex; gap: 64px; width:100%; max-width: 1600px; align-items:stretch;">
+        <div style="width: 4px; background: var(--color-signal); flex: none;"></div>
+        <div style="display:flex; flex-direction:column; gap: 36px;">
+          <div class="eyebrow" style="color: var(--color-signal);">Record schema per references/record-schema.md §1 — id, bi-temporal stamps, classification, audit reference.</div>
+          <h2 style="line-height: 1.1;">What a memory actually looks like on disk</h2>
+          <div style="font-size: 28px; line-height: 1.55; font-weight: 400; max-width: 1300px;">Each record is a Context Record: a stable id, an event timestamp distinct from its recorded timestamp, a scope, a source, tags, and a classification. The audit reference ties it to the hash-chained timeline. Nothing is hidden in a binary index — the store is readable with a text editor and diffable in git.
+
+Classification is not cosmetic: a PII pattern match forces at least confidential before the record is written, and retention policy travels with the record rather than living in a separate rulebook.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="source">Source: references/record-schema.md</div>
+</section>
+
+<section data-slide-type="content-3col" class="slide slide-content-3col">
+  <div class="slide-flow">
+    <h2 style="max-width: 1700px;">v0.1 deliberately does less than the roadmap</h2>
+    <div class="cx-oxford"></div>
+    <div class="flow-rows">
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">Deferred by design</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">Local embeddings, mobile Obsidian, organisation-tier roles, compliance packs, and the Docker backend. Each has a designated version; none is pretended to exist now.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">Sequence to launch</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">Sustained dogfood on a real vault, then ClawHub publication and the Obsidian directory submission, then per-host install documentation tested from a clean machine.</div>
+        </div>
+      </div>
+      <div class="flow-row cx-ledger-row">
+        <div style="display:grid; grid-template-columns: 420px 1fr; gap: 64px; width:100%; align-items:baseline;">
+          <div class="eyebrow" style="color: var(--color-signal); font-size: 17px;">The test of honesty</div>
+          <div style="font-size: 23px; line-height: 1.55; max-width: 1150px;">A working prototype and a proven product are different things. This deck separates them on every slide where the distinction applies.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="source">Source: docs/internal/LAUNCH-PLAN.md</div>
+</section>
+
+<section data-slide-type="closing" class="slide slide-closing cx-margin cx-paper" data-density="editorial" style="background-color: var(--color-card);">
+  <div class="slide-flow" style="padding-bottom: 0;">
+    <div style="flex: 1; display:flex; flex-direction:column; justify-content:center; gap: 40px; max-width: 1500px;">
+      <div class="eyebrow">Next step</div>
+      <h1 style="line-height: 1.05;">The product is one plugin. Everything else is an adapter that makes it reachable.</h1>
+      <div style="margin-top: 24px; border-top: 1px solid var(--color-rule); padding-top: 24px; font-size: 22px; line-height: 1.6; color: var(--color-ink); white-space: pre-line; max-width: 1300px;">Dogfood on a real vault · submit to the Obsidian directory · publish to ClawHub</div>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:baseline; border-top: 1px solid var(--color-rule); padding-top: 16px; font-family: var(--font-data); font-size: var(--size-body-4); color: var(--color-muted);">
+      <span>Upsurge</span>
+      <span>upsurge.ai/augmentiq</span>
     </div>
   </div>
 </section>
-
-<!-- 9. DEPLOY -->
-<section class="slide" data-n="09">
-  <div class="kicker">Deployment</div>
-  <h2>What the customer does</h2>
-  <pre style="margin-bottom:34px"><span class="c"># 1 — the vault gives you the memory</span>
-Obsidian → Settings → Community plugins → AugmentiQ → Enable
-        → copy the bearer token from the ribbon
-
-<span class="c"># 2 — the host gets the tools</span>
-<span class="g">openclaw plugins install clawhub:upsurge/augmentiq</span>
-        → paste the token
-
-<span class="c"># 3 — the host gets the judgement</span>
-<span class="g">cp -r AugmentiQ/ ~/.openclaw/workspace/skills/augmentiq/</span>
-<span class="c"># other hosts: same folder, that host's skills directory</span></pre>
-  <div class="grid3">
-    <div class="card"><div class="tag">Time</div><h3>Under 5 minutes</h3><p>Three steps. No Docker, no daemon, no external service.</p></div>
-    <div class="card"><div class="tag">Privileges</div><h3>Desktop only</h3><p>Obsidian desktop; the server binds loopback exclusively.</p></div>
-    <div class="card"><div class="tag">Optional</div><h3>Skill is portable</h3><p>Already on Hermes or Claude? Skip step 2 entirely.</p></div>
-  </div>
-</section>
-
-<!-- 10. SECURITY -->
-<section class="slide" data-n="10">
-  <div class="kicker">Security model</div>
-  <h2>Why this is safe to point at a real vault</h2>
-  <table>
-    <tr><th style="width:30%">Property</th><th>Mechanism</th></tr>
-    <tr><td>Network exposure</td><td>Server binds <code>127.0.0.1</code> only. No remote listener, no cloud relay.</td></tr>
-    <tr><td>Authentication</td><td>Auto-generated bearer token, constant-time compared on every request.</td></tr>
-    <tr><td>Data at rest</td><td>Plain files in <code>.augmentiq/</code> inside your vault — inspectable, backupable, yours.</td></tr>
-    <tr><td>Tamper evidence</td><td>SHA-256 chained audit; verification is a served operation, not a promise.</td></tr>
-    <tr><td>Destructive actions</td><td>Confirm required; vault deletes go to trash; pre-destroy export offered.</td></tr>
-    <tr><td>Read-only mode</td><td>Server rejects every write with <code>-32002</code> when enabled.</td></tr>
-  </table>
-  <div class="note" style="margin-top:34px">
-    <b>Honest caveat.</b> The bearer token is stored in plaintext in the host config (the same place other local credentials live). The transport is loopback HTTP, not TLS. Both are acceptable for a single-user local machine; neither is a substitute for OS-level access control.
-  </div>
-</section>
-
-<!-- 11. VERIFICATION -->
-<section class="slide" data-n="11">
-  <div class="kicker">Evidence</div>
-  <h2>What has actually been proven</h2>
-  <div class="grid2">
-    <div>
-      <table>
-        <tr><th>Claim</th><th>Result</th></tr>
-        <tr><td>Vault plugin installed</td><td>Live in a real vault since 24 Oct</td></tr>
-        <tr><td>Protocol + auth</td><td>Handshake, 401 enforcement</td></tr>
-        <tr><td>Full memory round-trip</td><td>remember → recall → update → forget, verified on disk</td></tr>
-        <tr><td>Audit integrity</td><td>33 entries, chain verified</td></tr>
-        <tr><td>OpenClaw tools</td><td>6 registered and loaded</td></tr>
-      </table>
-    </div>
-    <div>
-      <h3>Not yet proven</h3>
-      <ul>
-        <li>Multi-day dogfood across sessions</li>
-        <li>Second-machine install from a clean state</li>
-        <li>ClawHub distribution and Obsidian directory listing</li>
-        <li>Enterprise backend (AugmentIQ+ Docker)</li>
-      </ul>
-      <p class="sub" style="margin-top:20px">Stated plainly so nobody mistakes a working prototype for a proven product.</p>
-    </div>
-  </div>
-</section>
-
-<!-- 12. LIMITS / ROADMAP -->
-<section class="slide" data-n="12">
-  <div class="kicker">Limits and next</div>
-  <h2>What v0.1 deliberately does not do</h2>
-  <div class="grid2" style="gap:56px">
-    <div>
-      <h3 style="margin-bottom:22px">Out of scope now</h3>
-      <ul>
-        <li>Local embeddings — recall is lexical in v0.1</li>
-        <li>Mobile Obsidian</li>
-        <li>Org-tier roles and multi-user memory</li>
-        <li>Compliance packs (GDPR / SOC2 / HIPAA / ISO)</li>
-        <li>Enterprise Docker backend</li>
-      </ul>
-    </div>
-    <div>
-      <h3 style="margin-bottom:22px">Sequence to launch</h3>
-      <ul>
-        <li>Sustained dogfood on a real vault</li>
-        <li>ClawHub publish + Obsidian directory submission</li>
-        <li>Install docs per host, tested from clean state</li>
-        <li>v1.1: embeddings behind a flag</li>
-        <li>Then enterprise backend</li>
-      </ul>
-    </div>
-  </div>
-  <div class="rule"></div>
-  <p class="lede">The product is one plugin. Everything else is an adapter that makes it reachable. Keep that hierarchy in view and the roadmap stays honest.</p>
-</section>
-
 </body>
 </html>

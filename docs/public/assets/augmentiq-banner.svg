@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="AugmentiQ — persistent memory for AI agents">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b5fff"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="300" fill="#0d1117"/>
+  <g transform="translate(90,70)" stroke="url(#g)" stroke-width="7" fill="none" stroke-linecap="round">
+    <circle cx="70" cy="80" r="46"/>
+    <path d="M70 34v-18M70 144v18M24 80H6M136 80h18M38 48L24 34M102 112l14 14M38 112l-14 14M102 48l14-14"/>
+    <circle cx="70" cy="80" r="16" stroke-width="6"/>
+  </g>
+  <text x="260" y="140" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica" font-size="86" font-weight="800" fill="#ffffff" letter-spacing="-2">AugmentiQ</text>
+  <text x="262" y="196" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica" font-size="30" fill="#9aa4b2">Persistent memory for AI agents — local, classified, auditable</text>
+  <text x="262" y="242" font-family="ui-monospace,SFMono-Regular,Menlo" font-size="22" fill="#5b6673">127.0.0.1:3710 · your vault · hash-chained</text>
+</svg>
