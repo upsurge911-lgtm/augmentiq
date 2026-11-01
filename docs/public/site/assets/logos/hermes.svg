@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 96" role="img" aria-label="Hermes">
+  <g fill="none" stroke="#0d1117" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- caduceus-ish mark: staff, wings, orbit -->
+    <path d="M44 22v52"/>
+    <path d="M28 36c6-10 26-10 32 0"/>
+    <path d="M28 50c6-10 26-10 32 0"/>
+    <circle cx="44" cy="22" r="5" fill="#0d1117" stroke="none"/>
+  </g>
+  <text x="92" y="60" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Helvetica" font-size="30" font-weight="700" fill="#0d1117">Hermes</text>
+</svg>
