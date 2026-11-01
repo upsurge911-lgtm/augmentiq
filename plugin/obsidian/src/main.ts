@@ -28,9 +28,18 @@ export default class AugmentiQPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
     if (!this.settings.token) {
-      this.settings.token = crypto.randomBytes(32).toString('hex');
-      await this.saveSettings();
-      new Notice('AugmentiQ: token generated. Use the ribbon icon or command palette to copy it.');
+      const recovered = this.readTokenMirror();
+      if (recovered) {
+        this.settings.token = recovered;
+        await this.saveData(this.settings);
+        new Notice('AugmentiQ: token restored from the vault mirror — your agent configs still work.');
+      } else {
+        this.settings.token = crypto.randomBytes(32).toString('hex');
+        await this.saveSettings();
+        new Notice('AugmentiQ: token generated. Use the ribbon icon or command palette to copy it.');
+      }
+    } else {
+      this.writeTokenMirror(this.settings.token);
     }
     const vaultPath = (this.app.vault.adapter as any).basePath as string;
     this.store = new MemoryStore(vaultPath);
@@ -61,8 +70,44 @@ export default class AugmentiQPlugin extends Plugin {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) || {});
   }
 
+  /**
+   * Token durability. `data.json` is the source of truth, but Obsidian can drop it
+   * on upgrade/reinstall — which silently regenerates the token and breaks every
+   * agent config. We mirror it into the vault so it survives, and recover from the
+   * mirror if data.json came back empty.
+   */
+  private tokenMirrorPath(): string {
+    const base = (this.app.vault.adapter as any).basePath as string;
+    return [base, ".augmentiq", "token"].join(require("path").sep);
+  }
+
+  private readTokenMirror(): string | null {
+    try {
+      const fs = require("fs");
+      const p = this.tokenMirrorPath();
+      if (!fs.existsSync(p)) return null;
+      const v = String(fs.readFileSync(p, "utf8")).trim();
+      return /^[0-9a-f]{64}$/.test(v) ? v : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private writeTokenMirror(token: string): void {
+    try {
+      const fs = require("fs");
+      const path = require("path");
+      const p = this.tokenMirrorPath();
+      fs.mkdirSync(path.dirname(p), { recursive: true });
+      fs.writeFileSync(p, token, { encoding: "utf8", mode: 0o600 });
+    } catch {
+      /* non-fatal: data.json stays authoritative */
+    }
+  }
+
   async saveSettings() {
     await this.saveData(this.settings);
+    if (this.settings.token) this.writeTokenMirror(this.settings.token);
   }
 
   private ctx(): ToolCtx {
