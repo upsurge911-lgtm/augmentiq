@@ -125,7 +125,13 @@ Memory data lives in `.augmentiq/` at the vault root. Plugin settings live in th
 
 ## Status
 
-v0.1. The vault plugin runs against a real vault: memory round-trip, redaction, audit-chain verification and the full tool surface are tested end to end. The OpenClaw bridge and the skill are installed and loaded. Not yet proven: sustained multi-day use, clean-machine installation, public distribution.
+**v0.1 — working, not yet broadly distributed.**
+
+Verified end to end on a real vault: memory round-trip, redaction, audit-chain verification, token recovery, and a clean-clone build of both plugins. The OpenClaw plugin is submitted to ClawHub. The skill is installed and loaded.
+
+Not yet proven: sustained multi-day use, installation by a stranger on unfamiliar hardware, and public distribution through the Obsidian directory. If you want it in a production setting today, installing it together on a call is the honest path — [customdev@upsurge.ae](mailto:customdev@upsurge.ae).
+
+[`docs/public/deck/`](./docs/public/deck/) states the evidence position slide by slide.
 
 ## License
 
